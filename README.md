@@ -2,4 +2,4 @@
 
 Machine learning project for cs 229, Stanford University.
 
-$$\phi$$
+
