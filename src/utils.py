@@ -8,3 +8,4 @@ for j in range(100):
     print(j)
 
 print(5)
+print(np.pi)
