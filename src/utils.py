@@ -1,6 +1,39 @@
 import numpy as np
-import pandas as pd
-import matplotlib
 
-print(5)
-print(7)
+
+def preprocess(data,
+               output_variable: str = 'binary',
+               partitions: list = None):
+    """ Function takes in an input data on the typical panda-form from fix_yahoo_finance or alpha vantage or
+        any similar package. It then returns all the features as an X and the returns (binomial, multinomial or
+        continuous) as a Y.
+
+        X is an n-1 by 5 matrix with the features Open, High, Low, Close, Volume (in that particular order).
+
+        Note that the data for X is on time unit i, whereas Y is on time unit i + 1.
+
+        output_variable can also be any other word than "binary" or "multinomial",
+        which would correspond to arithmetic returns.
+
+        partitions needs to be active to use the multinomial case. e.g. partitions = [-0.02, -0.01, 0.0, 0.01, 0.02]
+    """
+    n, _ = data.shape
+    open_price = np.array(data['Open'])[0:n - 1]
+    high_price = np.array(data['High'])[0:n - 1]
+    low_price = np.array(data['Low'])[0:n - 1]
+    close_price = np.array(data['Close'])[0:n - 1]
+    traded_volume = np.array(data['Volume'])[0:n - 1]
+    returns = np.array(data['Close']) / np.array(data['Open']) - 1
+    returns = returns[1:n]
+    if output_variable == 'binary':
+        returns[returns > 0] = 1
+        returns[returns < 0] = 0
+    elif output_variable == 'multinomial':
+        assert partitions is not None, "Missing partitions for multinomial case."
+        m = len(partitions)
+        for i in range(m):
+            returns[returns < partitions[i]] = i + 1
+        returns[returns < 1] = m + 1
+        returns -= 1
+
+    return np.column_stack((open_price, high_price, low_price, close_price, traded_volume)), returns
