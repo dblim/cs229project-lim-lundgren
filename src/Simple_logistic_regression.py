@@ -8,9 +8,9 @@ compare_to_sklearn: bool = False
 SP500 = '^GSPC'
 GOOGLE = 'GOOGL'
 training_data = yf.download(SP500, '2012-01-01', '2015-12-31')
+val_data = yf.download(SP500, '2016-01-01', '2017-01-01')
 
 # Preprocess data
-val_data = yf.download(SP500, '2016-01-01', '2017-01-01')
 x_train, y_train = preprocess(training_data, incremental_data=True)
 x_train = quadratic_kernel(x_train)
 x_val, y_val = preprocess(val_data, incremental_data=True)
