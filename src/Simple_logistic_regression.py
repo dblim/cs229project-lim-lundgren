@@ -2,7 +2,7 @@
 from alpha_vantage.timeseries import TimeSeries
 from utils import preprocess, lookback_kernel
 import tensorflow as tf
-
+import numpy as np
 
 # Variables
 compare_to_sklearn: bool = True
@@ -11,13 +11,14 @@ SP500 = '^GSPC'
 GOOGLE = 'GOOGL'
 
 ts = TimeSeries(key='YOUR_API_KEY', output_format='pandas')
-data, _ = ts.get_intraday('GOLD', outputsize='full')
+data, _ = ts.get_intraday('GOLD', interval='1min', outputsize='full')
 training_data = data#yf.download(SP500, '2012-01-01', '2015-12-31')
 #val_data = yf.download(SP500, '2016-01-01', '2017-01-01')
 
 # Preprocess data
 x_train, y_train = preprocess(training_data, incremental_data=True)
 x_train, y_train = lookback_kernel(x_train, y_train)
+print(np.mean(y_train))
 #x_val, y_val = preprocess(val_data, incremental_data=True)
 #x_val = lookback_kernel(x_val)
 
@@ -28,7 +29,7 @@ y_train = y_train.reshape(n_train, 1)
 #y_val = y_val.reshape(n_val, 1)
 
 # Hyper Parameters
-learning_rate = 0.1
+learning_rate = 0.01
 training_epochs = 5000
 
 # tf input
@@ -63,7 +64,7 @@ with tf.Session() as sess:
         temp_train_acc = sess.run(accuracy, feed_dict={x: x_train, y: y_train})
         temp_test_acc = 0#sess.run(accuracy, feed_dict={x: x_val, y: y_val})
 
-        if (epoch + 1) % 100 == 0:
+        if (epoch + 1) % 10 == 0:
             print("Epoch:", '%04d' % (epoch + 1), "train accuracy =", temp_train_acc, "test accuracy =", temp_test_acc)
 
 # Sklearn
