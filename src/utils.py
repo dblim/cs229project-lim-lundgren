@@ -2,6 +2,7 @@ import numpy as np
 
 
 def preprocess(data,
+               alpha_yahoo: str = 'alpha',
                incremental_data: bool = False,
                output_variable: str = 'binary',
                partitions: list = None):
@@ -18,13 +19,30 @@ def preprocess(data,
 
         partitions needs to be active to use the multinomial case. e.g. partitions = [-0.02, -0.01, 0.0, 0.01, 0.02]
     """
+    op: str
+    high: str
+    low: str
+    close: str
+    vol: str
+    if alpha_yahoo == 'alpha':
+        op = '1. open'
+        high = '2. high'
+        low = '3. low'
+        close = '4. close'
+        vol = '5. volume'
+    elif alpha_yahoo == 'yahoo':
+        op = 'Open'
+        high = 'High'
+        low = 'Low'
+        close = 'Close'
+        vol = 'Volume'
     n, _ = data.shape
-    open_price = np.array(data['Open'])[0:n - 1]
-    high_price = np.array(data['High'])[0:n - 1]
-    low_price = np.array(data['Low'])[0:n - 1]
-    close_price = np.array(data['Close'])[0:n - 1]
-    traded_volume = np.array(data['Volume'])[0:n - 1]
-    returns = np.array(data['Close']) / np.array(data['Open']) - 1
+    open_price = np.array(data[op])[0:n - 1]
+    high_price = np.array(data[high])[0:n - 1]
+    low_price = np.array(data[low])[0:n - 1]
+    close_price = np.array(data[close])[0:n - 1]
+    traded_volume = np.array(data[vol])[0:n - 1]
+    returns = np.array(data[close]) / np.array(data[op]) - 1
     returns = returns[1:n]
     if output_variable == 'binary':
         returns[returns > 0] = 1
@@ -57,4 +75,4 @@ def quadratic_kernel(data):
 def lookback_kernel(x, y,
                     period: int = 3):
     n, d = x.shape
-    
+
