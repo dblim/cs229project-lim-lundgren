@@ -2,6 +2,7 @@ import numpy as np
 
 
 def preprocess(data,
+               incremental_data: bool = False,
                output_variable: str = 'binary',
                partitions: list = None):
     """ Function takes in an input data on the typical panda-form from fix_yahoo_finance or alpha vantage or
@@ -35,5 +36,19 @@ def preprocess(data,
             returns[returns < partitions[i]] = i + 1
         returns[returns < 1] = m + 1
         returns -= 1
+    if incremental_data is True:
+        time_unit_returns = close_price / open_price - 1
+        high_to_open = high_price / open_price - 1
+        low_to_open = low_price / open_price - 1
+        return np.column_stack((time_unit_returns, high_to_open, low_to_open, traded_volume)), returns
+    else:
+        return np.column_stack((open_price, high_price, low_price, close_price, traded_volume)), returns
 
-    return np.column_stack((open_price, high_price, low_price, close_price, traded_volume)), returns
+
+def quadratic_kernel(data):
+    n, d = data.shape
+    new_data = np.zeros((n, 1))
+    for i in range(d):
+        for j in range(d - i):
+            new_data = np.hstack((new_data, (data[:, i] * data[:, j]).reshape(n, 1)))
+    return new_data[:, 1:]
