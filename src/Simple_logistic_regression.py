@@ -1,29 +1,34 @@
-import fix_yahoo_finance as yf
-from utils import preprocess, quadratic_kernel
+#import fix_yahoo_finance as yf
+from alpha_vantage.timeseries import TimeSeries
+from utils import preprocess, lookback_kernel
 import tensorflow as tf
 
+
 # Variables
-compare_to_sklearn: bool = False
+compare_to_sklearn: bool = True
 # Download data
 SP500 = '^GSPC'
 GOOGLE = 'GOOGL'
-training_data = yf.download(SP500, '2012-01-01', '2015-12-31')
-val_data = yf.download(SP500, '2016-01-01', '2017-01-01')
+
+ts = TimeSeries(key='YOUR_API_KEY', output_format='pandas')
+data, _ = ts.get_intraday('GOLD', outputsize='full')
+training_data = data#yf.download(SP500, '2012-01-01', '2015-12-31')
+#val_data = yf.download(SP500, '2016-01-01', '2017-01-01')
 
 # Preprocess data
 x_train, y_train = preprocess(training_data, incremental_data=True)
-x_train = quadratic_kernel(x_train)
-x_val, y_val = preprocess(val_data, incremental_data=True)
-x_val = quadratic_kernel(x_val)
+x_train, y_train = lookback_kernel(x_train, y_train)
+#x_val, y_val = preprocess(val_data, incremental_data=True)
+#x_val = lookback_kernel(x_val)
 
 # Data changes n stuff..
 n_train, d = x_train.shape
-n_val, _ = x_val.shape
+#n_val, _ = x_val.shape
 y_train = y_train.reshape(n_train, 1)
-y_val = y_val.reshape(n_val, 1)
+#y_val = y_val.reshape(n_val, 1)
 
 # Hyper Parameters
-learning_rate = 0.01
+learning_rate = 0.1
 training_epochs = 5000
 
 # tf input
@@ -56,7 +61,7 @@ with tf.Session() as sess:
     for epoch in range(training_epochs):
         sess.run([optimizer, cost], feed_dict={x: x_train, y: y_train})
         temp_train_acc = sess.run(accuracy, feed_dict={x: x_train, y: y_train})
-        temp_test_acc = sess.run(accuracy, feed_dict={x: x_val, y: y_val})
+        temp_test_acc = 0#sess.run(accuracy, feed_dict={x: x_val, y: y_val})
 
         if (epoch + 1) % 100 == 0:
             print("Epoch:", '%04d' % (epoch + 1), "train accuracy =", temp_train_acc, "test accuracy =", temp_test_acc)
@@ -68,9 +73,9 @@ if compare_to_sklearn is True:
     import numpy as np
 
     y_train = y_train.reshape(n_train,)
-    y_val = y_val.reshape(n_val,)
+    #y_val = y_val.reshape(n_val,)
     clf = LogisticRegression(fit_intercept=True, random_state=0, solver='lbfgs')
     clf.fit(x_train, y_train)
-    print('Sklearn Accuracy:', np.mean(np.abs(1 - clf.predict(x_val) - y_val)))
+    print('Sklearn Accuracy:', np.mean(np.abs(1 - clf.predict(x_train) - y_train)))
 
 
