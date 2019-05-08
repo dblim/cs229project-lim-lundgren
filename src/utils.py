@@ -73,14 +73,14 @@ def quadratic_kernel(data):
 
 
 def lookback_kernel(x, y,
-                    periods: int = 3,
+                    n_timesteps_back: int = 3,
                     time_step: int = 1):
     n, d = x.shape
-    y = y[periods:n]
-    new_data = np.zeros((n - periods, 1))
+    y = y[n_timesteps_back:n]
+    new_data = np.zeros((n - n_timesteps_back, 1))
     for i in range(d):
         for j in range(periods):
-            new_column = (x[(periods-j):(n-j), i]).reshape(n - periods, 1)
+            new_column = (x[(n_timesteps_back-j):(n-j), i]).reshape(n - n_timesteps_backs, 1)
             new_data = np.hstack((new_data, new_column))
     return new_data[:, 1:], y
 
