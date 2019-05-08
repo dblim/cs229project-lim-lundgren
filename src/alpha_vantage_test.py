@@ -1,11 +1,14 @@
 from alpha_vantage.timeseries import TimeSeries
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+from utils import preprocess, lookback_kernel
 ts = TimeSeries(key='YOUR_API_KEY', output_format='pandas')
-data, _ = ts.get_intraday('GOOGL', outputsize='full')
+data, _ = ts.get_intraday('^GSPC', outputsize='full')
 
-#data['4. close'].plot()
-#plt.show()
-print(data)
-print(np.array(data['1. open']))
+x, y = preprocess(data, incremental_data=True)
+
+print(x)
+print(x.shape)
+
+x, y = lookback_kernel(x, y)
+
+print(x)
+print(x.shape)

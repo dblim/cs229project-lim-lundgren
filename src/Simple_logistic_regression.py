@@ -73,3 +73,4 @@ if compare_to_sklearn is True:
     clf.fit(x_train, y_train)
     print('Sklearn Accuracy:', np.mean(np.abs(1 - clf.predict(x_val) - y_val)))
 
+
