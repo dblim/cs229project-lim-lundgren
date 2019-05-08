@@ -2,6 +2,8 @@ import fix_yahoo_finance as yf
 from utils import preprocess, quadratic_kernel
 import tensorflow as tf
 
+# Variables
+compare_to_sklearn: bool = False
 # Download data
 SP500 = '^GSPC'
 GOOGLE = 'GOOGL'
@@ -21,7 +23,7 @@ y_train = y_train.reshape(n_train, 1)
 y_val = y_val.reshape(n_val, 1)
 
 # Hyper Parameters
-learning_rate = 0.1
+learning_rate = 0.01
 training_epochs = 5000
 
 # tf input
@@ -61,11 +63,13 @@ with tf.Session() as sess:
 
 # Sklearn
 
-from sklearn.linear_model import LogisticRegression
-import numpy as np
+if compare_to_sklearn is True:
+    from sklearn.linear_model import LogisticRegression
+    import numpy as np
 
-y_train = y_train.reshape(n_train,)
-y_val = y_val.reshape(n_val,)
-clf = LogisticRegression(fit_intercept=True, random_state=0, solver='lbfgs')
-clf.fit(x_train, y_train)
-print('Accuracy:', np.mean(np.abs(1 - clf.predict(x_val) - y_val)))
+    y_train = y_train.reshape(n_train,)
+    y_val = y_val.reshape(n_val,)
+    clf = LogisticRegression(fit_intercept=True, random_state=0, solver='lbfgs')
+    clf.fit(x_train, y_train)
+    print('Sklearn Accuracy:', np.mean(np.abs(1 - clf.predict(x_val) - y_val)))
+
