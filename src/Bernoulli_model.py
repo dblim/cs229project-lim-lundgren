@@ -25,5 +25,5 @@ def fit(y,improvement):
 def bernoulli_accuracy(y,p):
     #generate predictions for p
     predictions = np.array([bernoulli_model(p) for i in range(len(y))])
-    return ('accurary?',np.mean(np.linalg.norm(y - predictions, ord = 1)),'predictions is', predictions)
+    return ('accurary?',np.mean(abs(y - predictions)),'predictions is', predictions)
 
