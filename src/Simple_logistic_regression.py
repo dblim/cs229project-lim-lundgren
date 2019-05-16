@@ -1,8 +1,10 @@
 #import fix_yahoo_finance as yf
 from alpha_vantage.timeseries import TimeSeries
 from utils import preprocess, lookback_kernel
+from time_series_evaluation import difference
 import tensorflow as tf
 import numpy as np
+from Bernoulli_model import fit, bernoulli_accuracy
 
 # Variables
 compare_to_sklearn: bool = True
@@ -16,9 +18,13 @@ training_data = data#yf.download(SP500, '2012-01-01', '2015-12-31')
 #val_data = yf.download(SP500, '2016-01-01', '2017-01-01')
 
 # Preprocess data
-x_train, y_train = preprocess(training_data, incremental_data=True)
+
+
+x_train, y_train = preprocess(training_data, incremental_data=True, kth_difference=10)
 x_train, y_train = lookback_kernel(x_train, y_train)
-print(np.mean(y_train))
+
+
+
 #x_val, y_val = preprocess(val_data, incremental_data=True)
 #x_val = lookback_kernel(x_val)
 
@@ -30,7 +36,7 @@ y_train = y_train.reshape(n_train, 1)
 
 # Hyper Parameters
 learning_rate = 0.01
-training_epochs = 5000
+training_epochs = 1000
 
 # tf input
 x = tf.placeholder(tf.float32, [None, d], name='x_place')
@@ -68,6 +74,10 @@ with tf.Session() as sess:
             print("Epoch:", '%04d' % (epoch + 1), "train accuracy =", temp_train_acc, "test accuracy =", temp_test_acc)
 
 # Sklearn
+print('mean of y_train is',np.mean(y_train))
+p = fit(y_train, 0.1)
+print('value of p is',p)
+print(bernoulli_accuracy(y_train,p))
 
 if compare_to_sklearn is True:
     from sklearn.linear_model import LogisticRegression
@@ -76,7 +86,8 @@ if compare_to_sklearn is True:
     y_train = y_train.reshape(n_train,)
     #y_val = y_val.reshape(n_val,)
     clf = LogisticRegression(fit_intercept=True, random_state=0, solver='lbfgs')
-    clf.fit(x_train, y_train)
+    fit = clf.fit(x_train, y_train)
     print('Sklearn Accuracy:', np.mean(np.abs(1 - clf.predict(x_train) - y_train)))
+    print('mean-pred:', np.mean(clf.predict(x_train)))
 
 

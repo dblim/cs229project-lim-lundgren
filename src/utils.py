@@ -1,11 +1,13 @@
 import numpy as np
+from time_series_evaluation import difference
 
 
 def preprocess(data,
                alpha_yahoo: str = 'alpha',
                incremental_data: bool = False,
                output_variable: str = 'binary',
-               partitions: list = None):
+               partitions: list = None,
+               kth_difference: int = 0):
     """ Function takes in an input data on the typical panda-form from fix_yahoo_finance or alpha vantage or
         any similar package. It then returns all the features as an X and the returns (binomial, multinomial or
         continuous) as a Y.
@@ -44,6 +46,7 @@ def preprocess(data,
     traded_volume = np.array(data[vol])[0:n - 1]
     returns = np.array(data[close]) / np.array(data[op]) - 1
     returns = returns[1:n]
+    returns = difference(returns,kth_difference)
     if output_variable == 'binary':
         returns[returns > 0] = 1
         returns[returns < 0] = 0
