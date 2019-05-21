@@ -43,10 +43,10 @@ def preprocess(data,
     high_price = np.array(data[high])[0:n - 1]
     low_price = np.array(data[low])[0:n - 1]
     close_price = np.array(data[close])[0:n - 1]
-    traded_volume = np.array(data[vol])[0:n - 1]
+    traded_volume = np.array(data[vol])[1:n] - np.array(data[vol])[0:n - 1]
     returns = np.array(data[close]) / np.array(data[op]) - 1
     returns = returns[1:n]
-    returns = difference(returns,kth_difference)
+    returns = difference(returns, kth_difference)
     if output_variable == 'binary':
         returns[returns > 0] = 1
         returns[returns < 0] = 0
