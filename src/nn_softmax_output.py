@@ -63,7 +63,7 @@ n_val, _ = x_val.shape
 
 # Hyperparameters
 learning_rate = 0.001
-training_epochs = 20000
+training_epochs = 5000
 
 # Arrays:
 W1_weights: np.ndarray
@@ -149,7 +149,9 @@ if plot_roc is True:
     a1_numeric = 1/(1+np.exp(-z1_numeric))
 
     z2_numeric = np.add(np.matmul(a1_numeric, W2_weights), b2_weights.T)
-    a2_numeric = 1/(1+np.exp(-z2_numeric))
+    #a2_numeric = 1/(1+np.exp(-z2_numeric))
+    a2_numeric = z2_numeric
+    a2_numeric[a2_numeric < 0] = 0
 
     z3_numeric = np.add(np.matmul(a2_numeric, W3_weights), b3_weights.T)
 
