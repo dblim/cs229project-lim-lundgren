@@ -69,7 +69,7 @@ def quadratic_kernel(data):
     for i in range(d):
         for j in range(d - i):
             new_data = np.hstack((new_data, (data[:, i] * data[:, j]).reshape(n, 1)))
-    return new_data[:, 1:]
+    return np.hstack((data, new_data[:, 1:]))
 
 
 def lookback_kernel(x, y,
@@ -84,3 +84,9 @@ def lookback_kernel(x, y,
             new_data = np.hstack((new_data, new_column))
     return new_data[:, 1:], y
 
+
+def y_numeric_to_vector(data, k):
+    y = np.zeros((k, data.shape[0]))
+    for i in range(data.shape[0]):
+        y[int(data[i]), i] = 1
+    return y.T

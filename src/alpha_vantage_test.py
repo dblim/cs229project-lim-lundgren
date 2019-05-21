@@ -1,6 +1,4 @@
-from alpha_vantage.timeseries import TimeSeries
-from utils import preprocess, lookback_kernel
-ts = TimeSeries(key='YOUR_API_KEY', output_format='pandas')
-data, _ = ts.get_intraday('^GSPC', outputsize='full')
-
-print(data.shape)
+from utils import y_numeric_to_vector
+import numpy as np
+data = np.array([0, 1, 2, 3, 1, 1, 1, 2, 0])
+print(y_numeric_to_vector(data, 4))
