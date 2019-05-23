@@ -1,5 +1,5 @@
 import numpy as np
-from time_series_evaluation import difference
+from trash_folder.time_series_evaluation import difference
 
 
 def preprocess(data,
@@ -33,11 +33,11 @@ def preprocess(data,
         close = '4. close'
         vol = '5. volume'
     elif alpha_yahoo == 'yahoo':
-        op = 'Open'
-        high = 'High'
-        low = 'Low'
-        close = 'Close'
-        vol = 'Volume'
+        op = 'open'
+        high = 'high'
+        low = 'low'
+        close = 'close'
+        vol = 'volume'
     n, _ = data.shape
     open_price = np.array(data[op])[0:n - 1]
     high_price = np.array(data[high])[0:n - 1]
