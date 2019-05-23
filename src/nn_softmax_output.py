@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 keras: bool = False
 t_flow: bool = True
 plot_roc: bool = True
+reg: bool = True
 
 # Download data
 SP500 = '^GSPC'
@@ -65,6 +66,9 @@ n_val, _ = x_val.shape
 learning_rate = 0.001
 training_epochs = 5000
 
+# Regularization parameters
+beta = 0.1
+
 # Arrays:
 W1_weights: np.ndarray
 b1_weights: np.ndarray
@@ -108,6 +112,13 @@ if t_flow is True:
     # Loss function
     y_clipped = tf.clip_by_value(y_hat, 1e-10, 0.9999999)
     cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=y, logits=y_clipped))
+
+
+
+    if reg is True:
+        regularizer = beta * (tf.nn.l2_loss(W1) + tf.nn.l2_loss(W2) + tf.nn.l2_loss(W1))
+        cost = tf.reduce_mean(cost + beta * regularizer)
+
     prediction = tf.round(y_hat)
     correct = tf.cast(tf.equal(prediction, y), dtype=tf.float32)
     accuracy = tf.reduce_mean(correct)
