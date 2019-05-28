@@ -61,6 +61,7 @@ elif zero_one is True:
 # Data changes n stuff..
 n_train, d = x_train.shape
 n_val, _ = x_val.shape
+print(n_train, d)
 
 # Hyperparameters
 learning_rate = 0.001
@@ -112,8 +113,6 @@ if t_flow is True:
     # Loss function
     y_clipped = tf.clip_by_value(y_hat, 1e-10, 0.9999999)
     cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=y, logits=y_clipped))
-
-
 
     if reg is True:
         regularizer = beta * (tf.nn.l2_loss(W1) + tf.nn.l2_loss(W2) + tf.nn.l2_loss(W1))
