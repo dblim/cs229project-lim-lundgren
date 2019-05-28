@@ -93,3 +93,7 @@ def y_numeric_to_vector(data, k):
     for i in range(data.shape[0]):
         y[int(data[i]), i] = 1
     return y.T
+
+
+def normalize(x):
+    pass
