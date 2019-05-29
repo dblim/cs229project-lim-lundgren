@@ -39,11 +39,7 @@ def combine_ts_returns(tickers : list ):
 
 # data
 tickers = ['AAP', 'AES', 'AMD', 'BSX']
-
-
 data = combine_ts_returns(tickers)
-
-
 
 # Split data
 n = np.shape(data)[0]
@@ -61,8 +57,8 @@ exog_x_val = val_data.drop(columns=y_list)
 
 # For each p value,  print MSE error corresponding to VAR model.
 for p in range(1,10):
-    model = VAR(exog_x.values)
-    predictions = model.fit(p).forecast( exog_x_val.values, steps=1)
+    model = VAR(endog_y.values)
+    predictions = model.fit(p).forecast( endog_y.values, steps=1)
     for i, ticker in  enumerate( tickers):
         MSE = sum((predictions[:, i] - endog_y_val.values[:, i])**2)/endog_y_val.shape[0]
         print("For p = {} and {}, ".format(p, ticker) + "MSE error is", MSE)
