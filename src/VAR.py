@@ -1,20 +1,28 @@
-from utils import preprocess, lookback_kernel, quadratic_kernel, y_numeric_to_vector
 import pandas as pd
-import seaborn as sb
-import tensorflow as tf
+from pandas import Series
 import numpy as np
-import matplotlib
-matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
-from statsmodels.tsa.api import VAR
+from statsmodels.tsa.ar_model import AR
 
 # Data source
 path = 'data/top_stocks/AAP.csv'
 data = pd.read_csv(path)
-print(data['close'])
+frame = Series.from_csv(path, header = 0)
+X = frame.values
+n = len(X)
 
-data['close'].plot()
+# Train/val split:
 
+train_data = X[ : int(0.8*n)]
+val_data = X[int(0.8*n) : ]
+
+"""# Fit model
+exog = train_data
+model = AR(train_data.astype(float))
+model_fit = model.fit()
+
+# Prediction
+predictions = model_fit.predict(start=len(train_data), end=len(train_data)+len(test_data)-1)"""
 
 
 
