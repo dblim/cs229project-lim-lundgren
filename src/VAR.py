@@ -4,25 +4,43 @@ import numpy as np
 import matplotlib.pyplot as plt
 from statsmodels.tsa.ar_model import AR
 
-# Data source
-path = 'data/top_stocks/AAP.csv'
-data = pd.read_csv(path)
-frame = Series.from_csv(path, header = 0)
-X = frame.values
-n = len(X)
+# A function to combine tickers and add a column for returns.
+# Returns defined as closing minus opening price.
 
-# Train/val split:
 
-train_data = X[ : int(0.8*n)]
-val_data = X[int(0.8*n) : ]
+def append_returns(stock, stock_name):
+    df = stock.dropna() # remove nans
+    returns = stock['close'] - stock['open']
+    returns.name = stock_name + '_returns'
+    return pd.concat([df, returns], axis = 1)
 
-"""# Fit model
-exog = train_data
-model = AR(train_data.astype(float))
-model_fit = model.fit()
+def combine_ts_returns(tickers : list ):
+    stock0 = tickers[0]
+    data = pd.read_csv('data/top_stocks/'+stock0+'.csv')
+    data = append_returns(data, stock0)
+    renamer = {'close': stock0 + '_close', 'high': stock0 + '_high', 'low': stock0 + '_low',
+               'open': stock0 + '_open', 'volume': stock0 + '_volume', }
+    data = data.rename(columns = renamer )
+    tickers.remove(stock0)
+    return(data)
 
-# Prediction
-predictions = model_fit.predict(start=len(train_data), end=len(train_data)+len(test_data)-1)"""
+tickers = ['AAP']
+print(combine_ts_returns(tickers))
+print(tickers )
+
+
+
+
+
+
+
+
+
+
+# Split data
+#n = np.shape(data)[0]
+#train_data = data[0 : int(0.8*n)]
+#vald_data = data[int(0.8*n) : ]
 
 
 
