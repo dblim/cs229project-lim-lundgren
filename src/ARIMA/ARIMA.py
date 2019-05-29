@@ -1,15 +1,14 @@
 from statsmodels.tsa.statespace.varmax import VARMAX
 from utils import combine_ts
-import numpy as np
 import matplotlib.pyplot as plt
 
 # Get data
-tickers = ['AAP', 'CRM', 'FOX']
+tickers = ['AAP', 'CRM']
 data = combine_ts(tickers)
 n, _ = data.shape
 
 # Split data
-train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
+train_val_test_split = {'train': 0.07, 'val': 0.085, 'test': 1}
 train_data = data[0: int(n*train_val_test_split['train'])]
 val_data = data[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
 
@@ -23,7 +22,7 @@ endog_y_val = val_data[y_list]
 exog_x_val = val_data.drop(columns=y_list)
 
 # Fit model
-model = VARMAX(endog=endog_y.values, exog=exog_x.values, order=(1, 1))
+model = VARMAX(endog=endog_y.values, exog=exog_x.values, order=(1, 0))
 model_fit = model.fit(disp=False)
 
 # make prediction
