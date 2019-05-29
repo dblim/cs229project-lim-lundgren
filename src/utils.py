@@ -1,13 +1,11 @@
 import numpy as np
-from trash_folder.time_series_evaluation import difference
-
+import pandas as pd
 
 def preprocess(data,
                alpha_yahoo: str = 'alpha',
                incremental_data: bool = False,
                output_variable: str = 'binary',
-               partitions: list = None,
-               kth_difference: int = 0):
+               partitions: list = None):
     """ Function takes in an input data on the typical panda-form from fix_yahoo_finance or alpha vantage or
         any similar package. It then returns all the features as an X and the returns (binomial, multinomial or
         continuous) as a Y.
@@ -46,7 +44,6 @@ def preprocess(data,
     traded_volume = np.array(data[vol])[1:n] - np.array(data[vol])[0:n - 1]
     returns = np.array(data[close]) / np.array(data[op]) - 1
     returns = returns[1:n]
-    returns = difference(returns, kth_difference)
     if output_variable == 'binary':
         returns[returns > 0] = 1
         returns[returns < 0] = 0
@@ -76,8 +73,7 @@ def quadratic_kernel(data):
 
 
 def lookback_kernel(x, y,
-                    periods: int = 3,
-                    time_step: int = 1):
+                    periods: int = 3):
     n, d = x.shape
     y = y[periods - 1:n]
     new_data = np.zeros((n - periods + 1, 1))
@@ -95,5 +91,21 @@ def y_numeric_to_vector(data, k):
     return y.T
 
 
-def normalize(x):
-    pass
+def combine_ts(tickers: list):
+    stock0 = tickers[0]
+    path = '../data/top_stocks/'+stock0+'.csv'
+    data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
+    renamer = {'close': stock0+'_close', 'high': stock0+'_high', 'low': stock0+'_low',
+               'open': stock0+'_open', 'volume': stock0+'_volume', }
+    data = data.rename(columns=renamer)
+    tickers.remove(tickers[0])
+    for str in tickers:
+        path = '../data/top_stocks/'+str+'.csv'
+        new_data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
+        renamer = {'close': str+'_close', 'high': str+'_high', 'low': str+'_low',
+                   'open': str + '_open', 'volume': str+'_volume', }
+        new_data = new_data.rename(columns=renamer)
+
+        data = pd.concat([data, new_data], axis=1, sort=True)
+    tickers.append(stock0)
+    return data.interpolate()[1:data.shape[0]]

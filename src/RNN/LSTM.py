@@ -1,7 +1,5 @@
 from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import LSTM
-from keras.layers import Dropout
+from keras.layers import Dense, LSTM, Dropout
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -48,25 +46,23 @@ def lstm_model(stock,
     # Initialising the RNN
     model = Sequential()
 
-    # Adding the first LSTM layer and some Dropout regularisation
+    # Adding layers. LSTM(50) --> Dropout(0.2) x 4
     model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], d)))
     model.add(Dropout(0.2))
 
-    # Adding a second LSTM layer and some Dropout regularisation
     model.add(LSTM(units=50, return_sequences=True))
     model.add(Dropout(0.2))
 
-    # Adding a third LSTM layer and some Dropout regularisation
     model.add(LSTM(units=50, return_sequences=True))
     model.add(Dropout(0.2))
 
-    # Adding a fourth LSTM layer and some Dropout regularisation
     model.add(LSTM(units=50))
     model.add(Dropout(0.2))
 
-    # Adding the output layer
+    # Output layer
     model.add(Dense(units=1))
-    # Compiling the RNN
+
+    # Run
     model.compile(optimizer='adam', loss='mean_squared_error')
 
     # Fitting the RNN to the Training set
@@ -74,8 +70,6 @@ def lstm_model(stock,
 
     # Validate
     predicted_stock_price = model.predict(X_val)
-    #predicted_stock_price = sc.inverse_transform(predicted_stock_price)
-    #real_stock_price = sc.inverse_transform(y_val.reshape(len(y_val), 1))
     predicted_stock_price = sc.inverse_transform(np.concatenate((predicted_stock_price, np.zeros((len(y_val), d-1))), axis=1))[:, 0]
     real_stock_price = sc.inverse_transform(np.concatenate((y_val.reshape(len(y_val), 1), np.zeros((len(y_val), d-1))), axis=1))[:, 0]
 
