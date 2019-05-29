@@ -63,4 +63,4 @@ tot_df = pd.concat([top_df, bot_df])
 m = len(tot_df)
 tot_df['zero'] = [0 for i in range(m)]
 tot_df.plot()
-plt.show()
+plt.savefig('ARIMA_test')
