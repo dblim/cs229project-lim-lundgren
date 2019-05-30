@@ -54,11 +54,16 @@ exog_x = train_data.drop(columns=y_list)
 endog_y_val = val_data[y_list]
 exog_x_val = val_data.drop(columns=y_list)
 
-# For each p value,  print MSE error corresponding to VAR model.
+# Returns an array of predictions for each integer in (1,p)
 
-model = VAR(endog_y.values)
-predictions =[ model.fit(p).forecast( endog_y.values, steps=1) for p in range(1,10)]
+def prediction_function(values, p):
+    model = VAR(values)
+    return [ model.fit(i).forecast(values, steps=1) for i in range(1,p)]
 
+
+predictions = prediction_function(endog_y.values, 10)
+
+# Prints MSE error for each p.
 for p in range(len(predictions)):
     for i, ticker in  enumerate( tickers):
         MSE = sum((predictions[p-1][:, i] - endog_y_val.values[:, i])**2)/endog_y_val.shape[0]
