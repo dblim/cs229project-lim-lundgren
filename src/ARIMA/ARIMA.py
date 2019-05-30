@@ -1,19 +1,21 @@
 from statsmodels.tsa.statespace.varmax import VARMAX
-from utils import combine_ts, minutizer
-import matplotlib.pyplot as plt
+from utils import combine_ts, minutizer, preprocess_arima
+import numpy as np
 
 # Get data
 tickers = ['AAP', 'MRK', 'NRG', 'ORLY']
-data = minutizer(combine_ts(tickers))
+data, opens = preprocess_arima(minutizer(combine_ts(tickers)), tickers)
 n, _ = data.shape
 
 # Split data
-train_val_test_split = {'train': 0.5, 'val': 0.65, 'test': 1}
+train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
 train_data = data[0: int(n*train_val_test_split['train'])]
 val_data = data[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
 
+opens_val = opens[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
+
 # split data in X and Y
-y_list = [ticker+'_close' for ticker in tickers]
+y_list = [ticker+'_returns' for ticker in tickers]
 # Train
 endog_y = train_data[y_list]
 exog_x = train_data.drop(columns=y_list)
@@ -22,7 +24,7 @@ endog_y_val = val_data[y_list]
 exog_x_val = val_data.drop(columns=y_list)
 
 # Fit model
-model = VARMAX(endog=endog_y.values, exog=exog_x.values, order=(1, 0))
+model = VARMAX(endog=endog_y.values, exog=exog_x.values, order=(2, 2))
 model_fit = model.fit(disp=False)
 
 # make prediction
@@ -30,5 +32,24 @@ predictions = model_fit.forecast(steps=exog_x_val.shape[0], exog=exog_x_val.valu
 
 # Evaluate
 for i, ticker in enumerate(tickers):
-    MSE = sum((predictions[:, i] - endog_y_val.values[:, i])**2)/endog_y_val.shape[0]
-    print(ticker+' MSE:', MSE)
+    pred = (predictions[:, i] + 1) * opens_val.values[:, i]
+    real = (endog_y_val.values[:, i] + 1) * opens_val.values[:, i]
+    MSE = sum((pred - real)**2)/endog_y_val.shape[0]
+    print('=========', ticker, '=========')
+    print(' MSE:', MSE)
+    pred_zero_one = predictions[:, i]
+    pred_zero_one[pred_zero_one > 0] = 1
+    pred_zero_one[pred_zero_one < 0] = 0
+    print('Predicted ones:', np.mean(pred_zero_one))
+    real_zero_one = endog_y_val.values[:, i]
+    real_zero_one[real_zero_one > 0] = 1
+    real_zero_one[real_zero_one < 0] = 0
+    print('Real ones:', np.mean(real_zero_one))
+    TP = np.sum(np.logical_and(pred_zero_one == 1, real_zero_one == 1))
+    TN = np.sum(np.logical_and(pred_zero_one == 0, real_zero_one == 0))
+    FP = np.sum(np.logical_and(pred_zero_one == 1, real_zero_one == 0))
+    FN = np.sum(np.logical_and(pred_zero_one == 0, real_zero_one == 1))
+    print('True positive:', TP)
+    print('True Negative:', TN)
+    print('False positive:', FP)
+    print('False Negative:', FN)

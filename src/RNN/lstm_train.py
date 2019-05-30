@@ -1,5 +1,3 @@
-
-from RNN.LSTM import lstm_model
-#stocks = ['AAP', 'CRM']
-stocks = 'AAP'
-test = lstm_model(stocks, epochs=30)
+from RNN.lstm_multi_new import lstm_model
+tickers = ['AAP', 'MRK', 'NRG', 'ORLY']
+test = lstm_model(tickers, epochs=30)

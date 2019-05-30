@@ -107,14 +107,14 @@ def combine_ts(tickers: list):
         new_data = new_data.rename(columns=renamer)
 
         data = pd.concat([data, new_data], axis=1, sort=True)
-    tickers.append(stock0)
+    tickers.insert(0, stock0)
     return data.interpolate()[1:data.shape[0]]
 
 
 def minutizer(data, split: int = 5):
     n, d = data.shape
-    new_data = pd.DataFrame(np.zeros((int(n/split), d)), columns=list(data))
-    for i in range(int(n/split)):
+    new_data = pd.DataFrame(np.zeros((int(n/split)-1, d)), columns=list(data))
+    for i in range(int(n/split)-1):
         for j in range(int(d/5)):
             new_data.iloc[i, j * split] = data.iloc[split * (i + 1), j * split]
             new_data.iloc[i, j * split + 1] = max([data.iloc[split*i+k, j * split + 1] for k in range(split)])
@@ -122,3 +122,23 @@ def minutizer(data, split: int = 5):
             new_data.iloc[i, j * split + 3] = data.iloc[split*i, j * split + 3]
             new_data.iloc[i, j * split + 4] = np.sum(data.iloc[i*split:(i+1)*split, j * split + 4])
     return new_data
+
+
+def preprocess_arima(data, tickers):
+    n, d = data.shape
+    new_d = int(d/5)
+    new_data = np.zeros((n, new_d * 3))
+    open_prices = np.zeros((n, new_d))
+    for i in range(new_d):
+        new_data[:, 3 * i] = data.iloc[:, 5 * i]/data.iloc[:, 5 * i + 3] - 1  # Returns
+        new_data[:, 3 * i + 1] = data.iloc[:, 5 * i + 1] - data.iloc[:, 5 * i + 2]  # Spread
+        new_data[:, 3 * i + 2] = data.iloc[:, 5 * i + 4] - np.mean(data.iloc[:, 5 * i + 4])  # Volume
+        open_prices[:, i] = data.iloc[:, 5 * i + 3]
+    header_data = []
+    header_open = []
+    for ticker in tickers:
+        header_data.append(ticker + '_returns')
+        header_data.append(ticker + '_spread')
+        header_data.append(ticker + '_volume')
+        header_open.append(ticker + '_open')
+    return pd.DataFrame(new_data, columns=header_data), pd.DataFrame(open_prices, columns=header_open)
