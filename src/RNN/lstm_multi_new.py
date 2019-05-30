@@ -87,46 +87,14 @@ def lstm_model(stocks: list,
         print('False positive:', FP)
         print('False Negative:', FN)
         print('Dummy guess true rate:', max(np.mean(real_zero_one), 1 - np.mean(real_zero_one)))
-        print('True rate:', (TP + TN)/(TP + TN + FP + FN))
+        accuracy = (TP + TN)/(TP + TN + FP + FN)
+        print('Accuracy:', max(accuracy, 1 - accuracy))
 
         plt.plot(real, color='red', label='Real ' + ticker + ' Stock Price')
         plt.plot(pred, color='blue', label='Predicted ' + ticker + ' Stock Price')
         plt.title(ticker + ' Stock Price Prediction')
         plt.xlabel('Time')
         plt.ylabel(ticker + ' Stock Price')
+        plt.legend()
         plt.savefig('../output/RNN_results/LSTM_new_test_' + ticker + '.png')
-        plt.legend()
         plt.close()
-
-
-    # Plot
-    """
-    for i in range(int(d/5)):
-        predict = predicted_stock_price[:, i]
-        real = real_stock_price[:, i]
-        stock = stocks[i]
-        plt.plot(real, color='red', label='Real '+stock+' Stock Price')
-        plt.plot(predict, color='blue', label='Predicted '+stock+' Stock Price')
-        plt.title(stock+' Stock Price Prediction')
-        plt.xlabel('Time')
-        plt.ylabel(stock+' Stock Price')
-        plt.legend()
-        plt.savefig('../output/RNN_results/LSTM_'+stock+'.png')
-        plt.close()
-
-        np.save('../output/RNN_results/LSTM_'+stock+'_predictions', predict)
-
-        # 0-1 loss and mean
-        y_binary_hat = predict[1: predict.shape[0]]/real[0: (predict.shape[0]-1)] - 1
-        y_binary = real[1: predict.shape[0]]/real[0: (predict.shape[0]-1)] - 1
-
-        y_binary[y_binary > 0] = 1
-        y_binary[y_binary < 0] = 0
-
-        y_binary_hat[y_binary_hat > 0] = 1
-        y_binary_hat[y_binary_hat < 0] = 0
-
-        print(stock+' Val set mean:', np.mean(y_binary))
-        print(stock+' Zero-One loss:', min(zero_one_loss(y_binary, y_binary_hat), 1-zero_one_loss(y_binary, y_binary_hat)))
-        print(stock+' Mean squared error:', sum((real-predict)**2)/predict.shape[0])
-    """
