@@ -109,3 +109,16 @@ def combine_ts(tickers: list):
         data = pd.concat([data, new_data], axis=1, sort=True)
     tickers.append(stock0)
     return data.interpolate()[1:data.shape[0]]
+
+
+def minutizer(data, split: int = 5):
+    n, d = data.shape
+    new_data = pd.DataFrame(np.zeros((int(n/split), d)), columns=list(data))
+    for i in range(int(n/split)):
+        for j in range(int(d/5)):
+            new_data.iloc[i, j * split] = data.iloc[split * (i + 1), j * split]
+            new_data.iloc[i, j * split + 1] = max([data.iloc[split*i+k, j * split + 1] for k in range(split)])
+            new_data.iloc[i, j * split + 2] = max([data.iloc[split * i + k, j * split + 2] for k in range(split)])
+            new_data.iloc[i, j * split + 3] = data.iloc[split*i, j * split + 3]
+            new_data.iloc[i, j * split + 4] = np.sum(data.iloc[i*split:(i+1)*split, j * split + 4])
+    return new_data

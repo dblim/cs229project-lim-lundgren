@@ -5,36 +5,37 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import zero_one_loss
+from utils import minutizer
 
 
 def lstm_model(stock,
-               lookback: int = 60,
-               epochs: int = 10):
+               lookback: int = 12,
+               epochs: int = 30):
     # Import data
     path = '../data/top_stocks/'+stock+'.csv'
-    data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
+    data = minutizer(pd.read_csv(path, index_col="timestamp", parse_dates=True), split=5)
     print(data.head())
 
     # Transform data
     n, d = data.shape
-    train_val_test_split = {'train': 0.1, 'val': 0.125, 'test': 1}
+    train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
     sc = MinMaxScaler(feature_range=(0, 1))
     data_set_scaled = sc.fit_transform(data)
     X_close = []
     X_high = []
     X_low = []
-    X_open = []
+    #X_open = []
     X_vol = []
     Y = []
     for i in range(lookback, len(data_set_scaled)):
         X_close.append(data_set_scaled[(i-lookback):i, 0])
         X_high.append(data_set_scaled[(i - lookback):i, 1])
         X_low.append(data_set_scaled[(i - lookback):i, 2])
-        X_open.append(data_set_scaled[(i - lookback):i, 3])
+        #X_open.append(data_set_scaled[(i - lookback):i, 3])
         X_vol.append(data_set_scaled[(i - lookback):i, 4])
         Y.append(data_set_scaled[i, 0])
     Y = np.array(Y)
-    X = np.stack((np.array(X_close), np.array(X_high), np.array(X_low), np.array(X_open), np.array(X_vol)), axis=2)
+    X = np.stack((np.array(X_close), np.array(X_high), np.array(X_low), np.array(X_vol)), axis=2)
 
     X_train = X[0: int(n * train_val_test_split['train'])]
     y_train = Y[0: int(n * train_val_test_split['train'])]
@@ -46,17 +47,17 @@ def lstm_model(stock,
     # Initialising the RNN
     model = Sequential()
 
-    # Adding layers. LSTM(50) --> Dropout(0.2) x 4
-    model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], d)))
+    # Adding layers. {LSTM(50) --> Dropout(0.2)} x 4
+    model.add(LSTM(units=25, return_sequences=True, input_shape=(X_train.shape[1], d-1)))
     model.add(Dropout(0.2))
 
-    model.add(LSTM(units=50, return_sequences=True))
+    model.add(LSTM(units=25, return_sequences=True))
     model.add(Dropout(0.2))
 
-    model.add(LSTM(units=50, return_sequences=True))
+    model.add(LSTM(units=25, return_sequences=True))
     model.add(Dropout(0.2))
 
-    model.add(LSTM(units=50))
+    model.add(LSTM(units=25))
     model.add(Dropout(0.2))
 
     # Output layer

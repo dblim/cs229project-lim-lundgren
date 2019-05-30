@@ -1,2 +1,5 @@
+
 from RNN.LSTM import lstm_model
-test = lstm_model('AAP', epochs=1)
+#stocks = ['AAP', 'CRM']
+stocks = 'AAP'
+test = lstm_model(stocks, epochs=30)

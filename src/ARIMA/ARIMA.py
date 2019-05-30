@@ -1,14 +1,14 @@
 from statsmodels.tsa.statespace.varmax import VARMAX
-from utils import combine_ts
+from utils import combine_ts, minutizer
 import matplotlib.pyplot as plt
 
 # Get data
-tickers = ['AAP', 'CRM']
-data = combine_ts(tickers)
+tickers = ['AAP', 'MRK', 'NRG', 'ORLY']
+data = minutizer(combine_ts(tickers))
 n, _ = data.shape
 
 # Split data
-train_val_test_split = {'train': 0.07, 'val': 0.085, 'test': 1}
+train_val_test_split = {'train': 0.5, 'val': 0.65, 'test': 1}
 train_data = data[0: int(n*train_val_test_split['train'])]
 val_data = data[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
 
