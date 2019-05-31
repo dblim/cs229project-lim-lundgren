@@ -1,8 +1,9 @@
+from utils import combine_ts_returns
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from statsmodels.tsa.api import VAR, VARMAX
-from utils import combine_ts_returns
+from statsmodels.tsa.api import VAR
+
 
 # data
 tickers = ['AAP', 'AES', 'AMD', 'BSX', 'CHD', 'CMG', 'CRM', 'EW', 'FOX', 'FOXA']
@@ -18,11 +19,11 @@ y_list = [t+'_returns' for t in tickers]
 endog_y = train_data[y_list]
 exog_x = train_data.drop(columns=y_list)
 
-
 # Validate
 endog_y_val = val_data[y_list]
 exog_x_val = val_data.drop(columns=y_list)
 
+# Model fitting and residuals
 # We choose a hyperparameter of p = 1
 
 model = VAR(endog_y.values)
@@ -33,35 +34,6 @@ results_values = results.fittedvalues
 print(residuals[0])
 print(results_values[0])
 print(endog_y)
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Get residual on train data to train for RNN
-#endog_y = endog_y[var_returns.index]
-#endog_y_returns = endog_y[var_returns.columns]
-#residual = endog_y_returns - var_returns
-#print(residual)
-
-
-
-
-#predictions_1 = model.fit(1).forecast(endog_y.values, steps=2)
-#print(predictions_1)
-
-
-
-
-
 
 # predictions = prediction_function(endog_y.values, 10)
 
