@@ -2,8 +2,6 @@ from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import zero_one_loss
-from sklearn.preprocessing import MinMaxScaler
 from utils import minutizer, combine_ts, preprocess_arima
 
 
@@ -11,7 +9,7 @@ def lstm_model(stocks: list,
                lookback: int = 12,
                epochs: int = 10):
     # Import data
-    data, opens = preprocess_arima(minutizer(combine_ts(stocks), split=5), stocks)
+    data, opens = preprocess_arima(minutizer(combine_ts(stocks), split=10), stocks)
     header = list(data)
 
     # Transform data

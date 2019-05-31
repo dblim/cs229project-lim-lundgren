@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # Get data
 tickers = ['AAP', 'MRK', 'NRG', 'ORLY']
-data, opens = preprocess_arima(minutizer(combine_ts(tickers)), tickers)
+data, opens = preprocess_arima(minutizer(combine_ts(tickers), split=10), tickers)
 n, _ = data.shape
 
 # Split data
