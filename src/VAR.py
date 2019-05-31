@@ -13,8 +13,6 @@ n = np.shape(data)[0]
 train_data = data[0 : int(0.8*n)]
 val_data = data[int(0.8*n) : ]
 
-
-
 # Train on returns
 y_list = [t+'_returns' for t in tickers]
 endog_y = train_data[y_list]
@@ -25,7 +23,7 @@ exog_x = train_data.drop(columns=y_list)
 endog_y_val = val_data[y_list]
 exog_x_val = val_data.drop(columns=y_list)
 
-# We choose a hyperparameter of p = 2
+# We choose a hyperparameter of p = 1
 
 model = VAR(endog_y.values)
 results = model.fit(1)

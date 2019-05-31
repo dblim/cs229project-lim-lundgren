@@ -23,12 +23,12 @@ def append_returns(TIKR):
     return pd.concat([df, returns_series, pct_returns], axis=1)
 
 
-ticker = 'GWW'
+ticker = 'NVDA'
 stock_df = read_stock(ticker)
 stock_df = append_returns(stock_df)
 
 # this value picked based on auto_correlation plot
-start_time = '2017-10-10 14:20:00'
+start_time = '2017-09-15 14:05:00'
 
 # size of test and train data
 train = 40
@@ -40,7 +40,7 @@ start_index = ts.index.get_loc(start_time)
 predictions = []
 for i in range(test):
     # choose model and fit
-    model = ARIMA(ts.iloc[start_index+i:start_index+i+train],order=(0,0,3))
+    model = ARIMA(ts.iloc[start_index+i:start_index+i+train],order=(2,0,0))
     model_fit = model.fit(disp=0)
     yhat = model_fit.forecast()[0]
     predictions.append(yhat[0])
@@ -55,7 +55,7 @@ top_df = top_df.set_index('timestamp')
 
 bot_df = pd.DataFrame(ts.index[start_index+train:start_index+train+20])
 bot_df['returns'] = list(ts['returns'][start_index+train:start_index+train+20])
-bot_df['predictions'] = [x*2 for x in predictions[:20]]
+bot_df['predictions'] = [x*3 for x in predictions[:20]]
 bot_df = bot_df.set_index('timestamp')
 
 
@@ -63,4 +63,5 @@ tot_df = pd.concat([top_df, bot_df])
 m = len(tot_df)
 tot_df['zero'] = [0 for i in range(m)]
 tot_df.plot()
-plt.savefig('ARIMA_test')
+plt.title('ARIMA model for '+ticker)
+plt.savefig('ARIMA_test_'+ticker)
