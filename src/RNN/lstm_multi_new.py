@@ -3,29 +3,32 @@ from keras.layers import Dense, LSTM, Dropout
 import matplotlib.pyplot as plt
 import numpy as np
 from utils import minutizer, combine_ts, preprocess_arima
+from keras.utils import to_categorical
+from keras import losses
 
 
 def lstm_model(stocks: list,
-               lookback: int = 12,
+               lookback: int = 24,
                epochs: int = 10):
     # Import data
-    data, opens = preprocess_arima(minutizer(combine_ts(stocks), split=10), stocks)
-    header = list(data)
+    data, opens = preprocess_arima(minutizer(combine_ts(stocks), split=5), stocks)
+    ground_features = 5
 
     # Transform data
     n, d = data.shape
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
 
     X = np.zeros((n - lookback, lookback, d))
-    Y = np.zeros((n - lookback, int(d/3)))
+    Y = np.zeros((n - lookback, int(d/ground_features)))
     for i in range(X.shape[0]):
         for j in range(d):
             X[i, :, j] = data.iloc[i:(i+lookback), j]
-            if j < int(d/3):
-                Y[i, j] = data.iloc[lookback + i, j * 3]
+            if j < int(d/ground_features):
+                Y[i, j] = data.iloc[lookback + i, j * ground_features]
+                #  if data.iloc[lookback + i, j * ground_features] > 0:
+                #    Y[i, j] = 1
 
     X_train = X[0: int(n * train_val_test_split['train'])]
-    print(X_train.shape)
     y_train = Y[0: int(n * train_val_test_split['train'])]
 
     X_val = X[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
@@ -38,23 +41,22 @@ def lstm_model(stocks: list,
     model = Sequential()
 
     # Adding layers. LSTM(25) --> Dropout(0.2) x 4
-    model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], d)))
+    model.add(LSTM(units=25, return_sequences=True, input_shape=(X_train.shape[1], d)))
     model.add(Dropout(0.2))
 
-    model.add(LSTM(units=50, return_sequences=True))
+    model.add(LSTM(units=25, return_sequences=True))
     model.add(Dropout(0.2))
 
-    model.add(LSTM(units=50, return_sequences=True))
-    model.add(Dropout(0.2))
+    model.add(LSTM(units=25, return_sequences=True))
 
-    model.add(LSTM(units=50))
+    model.add(LSTM(units=25))
     model.add(Dropout(0.2))
 
     # Output layer
-    model.add(Dense(units=int(d/3), activation='linear'))
+    model.add(Dense(units=int(d/ground_features), activation='linear'))
 
     # Run
-    model.compile(optimizer='adam', loss='mean_squared_error')
+    model.compile(optimizer='RMSProp', loss='mean_squared_error')  # , metrics=['accuracy'])
 
     # Fitting the RNN to the Training set
     model.fit(X_train, y_train, epochs=epochs, batch_size=96)
@@ -66,8 +68,10 @@ def lstm_model(stocks: list,
         pred = (predicted_stock_price[:, i] + 1) * opens_val.values[:, i]
         real = (y_val[:, i] + 1) * opens_val.values[:, i]
         MSE = sum((pred - real) ** 2) / y_val.shape[0]
+        dummy_mse = sum((real[1: real.shape[0]] - real[0: real.shape[0] - 1])**2)/(y_val.shape[0] - 1)
         print('=========', ticker, '=========')
-        print(' MSE:', MSE)
+        print('Dummy MSE:', dummy_mse)
+        print('MSE:', MSE)
         pred_zero_one = predicted_stock_price[:, i]
         pred_zero_one[pred_zero_one > 0] = 1
         pred_zero_one[pred_zero_one < 0] = 0

@@ -41,5 +41,5 @@ cmap = sns.diverging_palette(220, 10, as_cmap=True)
 sns.heatmap(d, mask=mask, cmap=cmap, vmax=.3, center=0,
             square=True, linewidths=.5, cbar_kws={"shrink": .5})
 
-plt.savefig('../data/hejsan.png')
+plt.savefig('../data/correlation.png')
 
