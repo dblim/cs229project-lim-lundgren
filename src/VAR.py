@@ -37,7 +37,7 @@ def combine_ts_returns(tickers : list ):
     return data.interpolate()[1 : data.shape[0]]
 
 # data
-tickers = ['AAP', 'AES', 'AMD', 'BSX']
+tickers = ['AAP', 'AES', 'AMD', 'BSX', 'CHD', 'CMG', 'CRM', 'EW', 'FOX', 'FOXA', 'HCA']
 data = combine_ts_returns(tickers)
 
 # Split data
@@ -48,13 +48,14 @@ val_data = data[int(0.8*n) : ]
 # Train on returns
 y_list = [t+'_returns' for t in tickers]
 endog_y = train_data[y_list]
-exog_x = train_data.drop(columns=y_list)
+#exog_x = train_data.drop(columns=y_list)
 
 # Validate
 endog_y_val = val_data[y_list]
-exog_x_val = val_data.drop(columns=y_list)
+#exog_x_val = val_data.drop(columns=y_list)
 
-# Returns an array of predictions for each integer in (1,p)
+# Returns an array of predictions for each integer in (1,p).
+# Recall that p is the hyperparameter in a VAR model
 
 def prediction_function(values, p):
     model = VAR(values)
@@ -67,6 +68,6 @@ predictions = prediction_function(endog_y.values, 10)
 for p in range(len(predictions)):
     for i, ticker in  enumerate( tickers):
         MSE = sum((predictions[p-1][:, i] - endog_y_val.values[:, i])**2)/endog_y_val.shape[0]
-        print("For p = {} and {}, ".format(p, ticker) + "MSE error is", MSE)
+        print("For p = {} and {}, ".format(p+1, ticker) + "MSE error is", MSE)
 
 
