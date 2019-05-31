@@ -63,7 +63,7 @@ def short_term_acf(ts,limit = 20000, window = 120, nlags = 4, threshold = 0.2):
     return new_df
 
 def main():
-    ticker = 'GWW'
+    ticker = 'NVDA'
 
     stock_df = read_stock(ticker)
     stock_df = append_returns(stock_df)
@@ -75,7 +75,7 @@ def main():
     plt.show()
     '''
 
-    acp_df = short_term_acf(stock_df[['returns']], threshold = 0.2 )
+    acp_df = short_term_acf(stock_df[['returns']], threshold = 0.2, nlags = 3 )
     acp_df.plot()
     plt.savefig('acp_for_'+ticker)
 
@@ -86,10 +86,9 @@ def main():
     #acp_df_trimm.asfreq('H')
 
     path = 'acp_data_for'+ticker+'.txt'
-    print(acp_df_trimm.head(20))
-    print(acp_df_trimm.tail(20))
+    print(acp_df_trimm.head(10))
+    print(acp_df_trimm.tail(5))
 
 if __name__ == '__main__':
-    print('right before main')
+    print('starting...')
     main()
-    print('right after main')
