@@ -1,11 +1,6 @@
 import numpy as np
-<<<<<<< HEAD
-from trash_folder.time_series_evaluation import difference
 import pandas as pd
 
-=======
-import pandas as pd
->>>>>>> ef6e24b6a6cc5acad8008d60ba04f240cab2ee34
 
 def preprocess(data,
                alpha_yahoo: str = 'alpha',
