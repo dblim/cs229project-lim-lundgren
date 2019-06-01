@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from statsmodels.tsa.api import VAR
 
-"""In this script, we will get the training residuals for VAR"""
+"""In this script, we will get the training residuals for VAR. These will then be trained on using RNN/LSTM"""
 
 # data
 tickers = ['AAP', 'AMD']
@@ -25,6 +25,9 @@ exog_x = train_data.drop(columns=y_list)
 endog_y_val = val_data[y_list]
 exog_x_val = val_data.drop(columns=y_list)
 
+# Test
+endog_y_test = test_data[y_list]
+exog_x_test = test_data.drop(columns = y_list)
 
 def get_training_residual(data,tickers , p):
     """Given data, this function returns a pandas dataframe on the TRAINING residuals
@@ -39,21 +42,10 @@ def get_training_residual(data,tickers , p):
     residuals.columns = [ticker + "_residuals" for ticker in tickers]
     return residuals
 
+# Print training residuals for p = 2
 print(get_training_residual(endog_y, tickers, 2))
 
 
-
-
-#print(results.fittedvalues[:2])
-#print(endog_y.iloc[:2])
-#print(residuals.iloc[:2])
-
-
-
-
-
-
-# predictions = prediction_function(endog_y.values, 10)
 
 # Prints MSE error for each p.
 """for p in range(len(predictions)):
