@@ -4,9 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from statsmodels.tsa.api import VAR
 
-
 # data
-tickers = ['AAP', 'AES', 'AMD', 'BSX', 'CHD', 'CMG', 'CRM', 'EW', 'FOX', 'FOXA']
+tickers = ['AAP', 'AMD']
 data = combine_ts_returns(tickers)
 
 # Split data
@@ -25,15 +24,21 @@ exog_x_val = val_data.drop(columns=y_list)
 
 # Model fitting and residuals
 # We choose a hyperparameter of p = 1
+# Returns a pandas dataframe
 
-model = VAR(endog_y.values)
-results = model.fit(1)
+VAR_model = VAR(endog_y)
+results  = VAR_model.fit(1)
 residuals = results.resid
 
-results_values = results.fittedvalues
-print(residuals[0])
-print(results_values[0])
-print(endog_y)
+
+#print(results.fittedvalues[:2])
+#print(endog_y.iloc[:2])
+#print(residuals.iloc[:2])
+
+
+
+
+
 
 # predictions = prediction_function(endog_y.values, 10)
 
