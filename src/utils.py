@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+
 def preprocess(data,
                alpha_yahoo: str = 'alpha',
                incremental_data: bool = False,
@@ -131,7 +132,7 @@ def minutizer(data, split: int = 5, ground_features: int = 5):
     return new_data
 
 
-def preprocess_arima(data, tickers: list, ground_features: int = 5, new_features: int = 5):
+def preprocess_arima(data, tickers: list, ground_features: int = 5, new_features: int = 8):
     n, d = data.shape
     new_d = int(d/ground_features)
     new_data = np.zeros((n, new_d * new_features))
@@ -145,16 +146,31 @@ def preprocess_arima(data, tickers: list, ground_features: int = 5, new_features
             data.iloc[:, ground_features * i + 4] - np.mean(data.iloc[:, ground_features * i + 4])  # Volume
         new_data[:, new_features * i + 3] = \
             data.iloc[:, ground_features * i + 3] - np.mean(data.iloc[:, ground_features * i + 3])  # normalized open
-        new_data[:, new_features * i + 4] = \
-            np.sin(2 * np.pi * new_data[:, new_features * i]/np.max(new_data[:, new_features * i]))  # Sin
+        # Laguerre polynomials
+        new_data[:, new_features * i + 4] = np.exp(- 0.5 * new_data[:, new_features * i + 3])
+        new_data[:, new_features * i + 5] = new_data[:, new_features * i + 4] * (1 - new_data[:, new_features * i + 3])
+        new_data[:, new_features * i + 6] = new_data[:, new_features * i + 4] * \
+            (1 - 2 * new_data[:, new_features * i + 3] + 0.5 * np.square(new_data[:, new_features * i + 3]))
+        new_data[:, new_features * i + 7] = \
+            np.sin(2 * np.pi * new_data[:, new_features * i + 3]/np.max(new_data[:, new_features * i + 3]))  # Sin
+
         open_prices[:, i] = data.iloc[:, ground_features * i + 3]
     header_data = []
     header_open = []
     for ticker in tickers:
-        header_data.append(ticker + '_returns')
-        header_data.append(ticker + '_spread')
-        header_data.append(ticker + '_volume')  # Normalized
-        header_data.append(ticker + '_normalized_open')
-        header_data.append(ticker + '_sin_returns')
+        header_data.append(ticker + '_returns')  # 0
+        header_data.append(ticker + '_spread')  # 1
+        header_data.append(ticker + '_volume')  # 2 Normalized
+        header_data.append(ticker + '_normalized_open')  # 3
+        header_data.append(ticker + '_exp1')  # 5
+        header_data.append(ticker + '_exp2')  # 6
+        header_data.append(ticker + '_exp3')  # 7
+        header_data.append(ticker + '_sin_returns')  # 8
         header_open.append(ticker + '_open')
     return pd.DataFrame(new_data, columns=header_data), pd.DataFrame(open_prices, columns=header_open)
+
+
+def mvp(sigma):
+    numerator = np.dot(np.linalg.inv(sigma), np.ones((sigma.shape[0], 1)))
+    denominator = np.dot(np.ones((1, sigma.shape[0])), np.dot(np.linalg.inv(sigma), np.ones((sigma.shape[0], 1))))
+    return numerator/denominator

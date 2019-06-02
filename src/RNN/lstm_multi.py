@@ -3,16 +3,15 @@ from keras.layers import Dense, LSTM, Dropout
 import matplotlib.pyplot as plt
 import numpy as np
 from utils import minutizer, combine_ts, preprocess_arima
-from keras.utils import to_categorical
-from keras import losses
 
 
 def lstm_model(stocks: list,
                lookback: int = 24,
-               epochs: int = 10):
+               epochs: int = 10,
+               batch_size: int = 96,
+               ground_features: int = 8):
     # Import data
     data, opens = preprocess_arima(minutizer(combine_ts(stocks), split=5), stocks)
-    ground_features = 5
 
     # Transform data
     n, d = data.shape
@@ -25,7 +24,7 @@ def lstm_model(stocks: list,
             X[i, :, j] = data.iloc[i:(i+lookback), j]
             if j < int(d/ground_features):
                 Y[i, j] = data.iloc[lookback + i, j * ground_features]
-                #  if data.iloc[lookback + i, j * ground_features] > 0:
+                #if data.iloc[lookback + i, j * ground_features] > 0:
                 #    Y[i, j] = 1
 
     X_train = X[0: int(n * train_val_test_split['train'])]
@@ -41,25 +40,26 @@ def lstm_model(stocks: list,
     model = Sequential()
 
     # Adding layers. LSTM(25) --> Dropout(0.2) x 4
-    model.add(LSTM(units=25, return_sequences=True, input_shape=(X_train.shape[1], d)))
+    model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], d)))
     model.add(Dropout(0.2))
 
-    model.add(LSTM(units=25, return_sequences=True))
+    model.add(LSTM(units=50, return_sequences=True))
     model.add(Dropout(0.2))
 
-    model.add(LSTM(units=25, return_sequences=True))
+    #model.add(LSTM(units=25, return_sequences=True))
+    #model.add(Dropout(0.2))
 
-    model.add(LSTM(units=25))
-    model.add(Dropout(0.2))
+    model.add(LSTM(units=50))
+    #model.add(Dropout(0.2))
 
     # Output layer
     model.add(Dense(units=int(d/ground_features), activation='linear'))
 
     # Run
-    model.compile(optimizer='RMSProp', loss='mean_squared_error')  # , metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='mean_squared_error')  # , metrics=['accuracy'])
 
     # Fitting the RNN to the Training set
-    model.fit(X_train, y_train, epochs=epochs, batch_size=96)
+    model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size)
 
     # Validate
     predicted_stock_price = model.predict(X_val)
@@ -67,11 +67,13 @@ def lstm_model(stocks: list,
     for i, ticker in enumerate(stocks):
         pred = (predicted_stock_price[:, i] + 1) * opens_val.values[:, i]
         real = (y_val[:, i] + 1) * opens_val.values[:, i]
+        actual_returns = y_val[:, i].copy()
         MSE = sum((pred - real) ** 2) / y_val.shape[0]
         dummy_mse = sum((real[1: real.shape[0]] - real[0: real.shape[0] - 1])**2)/(y_val.shape[0] - 1)
         print('=========', ticker, '=========')
         print('Dummy MSE:', dummy_mse)
         print('MSE:', MSE)
+        print('--')
         pred_zero_one = predicted_stock_price[:, i]
         pred_zero_one[pred_zero_one > 0] = 1
         pred_zero_one[pred_zero_one < 0] = 0
@@ -91,6 +93,20 @@ def lstm_model(stocks: list,
         print('Dummy guess true rate:', max(np.mean(real_zero_one), 1 - np.mean(real_zero_one)))
         accuracy = (TP + TN)/(TP + TN + FP + FN)
         print('Accuracy:', max(accuracy, 1 - accuracy))
+        print('--')
+        obvious_strategy = np.multiply(pred_zero_one, actual_returns)
+        dummy_return = 1
+        strategy_return = 1
+        for j in range(pred_zero_one.shape[0]):
+            dummy_return *= (1 + actual_returns[j])
+            if obvious_strategy[j] > 0:
+                strategy_return *= (1 + obvious_strategy[j]) * max(0, obvious_strategy[j])*100
+        print('Dummy return:', (dummy_return - 1) * 100)
+        print('Dummy standard deviation: ', np.std(actual_returns))
+        print('Dummy Sharpe Ration:', np.mean(actual_returns)/np.std(actual_returns))
+        print('Strategy return:', (strategy_return - 1) * 100)
+        print('Strategy standard deviation: ', np.std(obvious_strategy))
+        print('Strategy Sharpe Ration:', np.mean(obvious_strategy) / np.std(obvious_strategy))
 
         plt.plot(real, color='red', label='Real ' + ticker + ' Stock Price')
         plt.plot(pred, color='blue', label='Predicted ' + ticker + ' Stock Price')

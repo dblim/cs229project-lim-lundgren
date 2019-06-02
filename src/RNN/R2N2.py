@@ -12,9 +12,7 @@ data = pd.read_csv('../data/modified data')
 data = data.drop(columns=['Unnamed: 0'])
 data, opens = preprocess_arima(data, stocks)
 residual_data_train = pd.read_csv('../output/ARIMA_results/VARMAX_train_residuals.csv', parse_dates=True)
-residual_data_train = residual_data_train.drop(columns=['Unnamed: 0'])
 residual_data_test = pd.read_csv('../output/ARIMA_results/VARMAX_test_residuals.csv', parse_dates=True)
-residual_data_test = residual_data_test.drop(columns=['Unnamed: 0'])
 residuals = pd.concat((residual_data_train, residual_data_test), axis=0)
 n, d = data.shape
 n = int(n * 0.85)
@@ -58,13 +56,17 @@ model.add(Dropout(0.2))
 model.add(LSTM(units=25, return_sequences=True))
 model.add(Dropout(0.2))
 
+model.add(LSTM(units=25, return_sequences=True))
+model.add(Dropout(0.2))
+
 model.add(LSTM(units=25))
+model.add(Dropout(0.2))
 
 # Output layer
 model.add(Dense(units=4, activation='linear'))
 
 # Run
-model.compile(optimizer='RMSProp', loss='mean_squared_error')
+model.compile(optimizer='adam', loss='mean_squared_error')
 
 # Fitting the RNN to the Training set
 model.fit(X_train, y_train, epochs=30, batch_size=96)
