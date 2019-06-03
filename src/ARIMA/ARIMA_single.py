@@ -8,7 +8,7 @@ from pandas import read_csv
 
 def varmax(ticker: str,
            p: int = 2,
-           q: int = 2):
+           q: int = 0):
     data = preprocess_2(minutizer(read_csv('../data/Health-Care/' + ticker + '.csv', index_col='timestamp',
                                            parse_dates=True), split=5), ticker)
     n, d = data.shape

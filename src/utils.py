@@ -114,8 +114,8 @@ def combine_ts(tickers: list):
 
 def minutizer(data, split: int = 5, ground_features: int = 5):
     n, d = data.shape
-    new_data = pd.DataFrame(np.zeros((int(n/split), d)), columns=list(data))
-    for i in range(int(n/split)):
+    new_data = pd.DataFrame(np.zeros((int(n/split) - 1, d)), columns=list(data))
+    for i in range(int(n/split) - 1):
         for j in range(int(d/ground_features)):
             # Close
             new_data.iloc[i, j * ground_features] = data.iloc[split * (i + 1), j * ground_features]

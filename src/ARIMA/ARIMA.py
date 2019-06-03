@@ -7,42 +7,52 @@ import matplotlib.pyplot as plt
 # Get data
 def varmax(tickers,
            p: int = 2,
-           q: int = 2,):
-    data, opens = preprocess_2(minutizer(combine_ts(tickers), split=5), tickers)
+           q: int = 0,):
+    data, _ = preprocess_2(minutizer(combine_ts(tickers), split=5), tickers)
     n, _ = data.shape
 
     # Split data
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
     train_data = data[0: int(n*train_val_test_split['train'])]
     val_data = data[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
+    test_data = data[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
 
-    opens_val = opens[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
+    #opens_val = opens[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
 
     # split data in X and Y
     y_list = [ticker+'_returns' for ticker in tickers]
+
     # Train
     endog_y = train_data[y_list]
     exog_x = train_data.drop(columns=y_list)
+
     # Validate
     endog_y_val = val_data[y_list]
     exog_x_val = val_data.drop(columns=y_list)
+
+    # Test
+    endog_y_test = test_data[y_list]
+    exog_x_test = test_data.drop(columns=y_list)
 
     # Fit model
     model = VARMAX(endog=endog_y.values, exog=exog_x.values)
     model_fit = model.fit(disp=False, order=(p, q))
     # make prediction
-    predictions = model_fit.forecast(steps=exog_x_val.shape[0], exog=exog_x_val.values)
-    print(type(predictions))
-
-    train_residuals = model_fit.resid
-    print(train_residuals.shape)
-    print(exog_x.shape)
-    train_residuals = pd.DataFrame(train_residuals, columns=tickers)
-    train_residuals.to_csv('../output/ARIMA_results/VARMAX_train_residuals.csv', index=False)
-
-    test_residuals = np.subtract(np.array(predictions).reshape(endog_y_val.shape[0], len(tickers)), endog_y_val.values)
-    test_residuals = pd.DataFrame(test_residuals, columns=tickers)
-    test_residuals.to_csv('../output/ARIMA_results/VARMAX_test_residuals.csv', index=False)
+    predictions_val = model_fit.forecast(steps=exog_x_val.shape[0], exog=exog_x_val.values)
+    predictions_test = model_fit.forecast(steps=exog_x_test.shape[0], exog=exog_x_test.values)
+    for i, ticker in enumerate(tickers):
+        real_val = endog_y_val[ticker]
+        pred_val = predictions_val[:, i]
+        pd.DataFrame(real_val).to_csv('../output/ARIMA_results/predictions/val_files/'+ticker+'_val_predictions.csv',
+                                      index=False)
+        pd.DataFrame(pred_val).to_csv('../output/ARIMA_results/predictions/val_files/' + ticker + '_val_real.csv',
+                                      index=False)
+        real_test = endog_y_test[ticker]
+        pred_test = predictions_test[:, i]
+        pd.DataFrame(real_test).to_csv('../output/ARIMA_results/predictions/test_files/' + ticker + '_test_predictions.csv',
+                                       index=False)
+        pd.DataFrame(pred_test).to_csv('../output/ARIMA_results/predictions/test_files/' + ticker + '_test_real.csv',
+                                       index=False)
 
     # Evaluate
     pic: bool = False

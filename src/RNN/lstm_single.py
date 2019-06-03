@@ -15,7 +15,7 @@ def lstm_model(stock: str,
                dropout_rate: float = 0.1,
                ground_features: int = 5):
     # Import data
-    data = preprocess_2(minutizer(read_csv('../data/Health-Care/'+stock+'.csv', index_col='timestamp',
+    data = preprocess_2(minutizer(read_csv('../data/sectors/Information-Technology/'+stock+'.csv', index_col='timestamp',
                                            parse_dates=True), split=5), stock)
     # Transform data
     n, d = data.shape
