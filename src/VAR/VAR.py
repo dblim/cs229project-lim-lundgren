@@ -33,11 +33,10 @@ exog_x_test = test_data.drop(columns = y_list)
 VAR_model = VAR(endog_y)
 results = VAR_model.fit(1)
 
-
 # Predictions
 predictions = results.forecast(endog_y.values, steps = n)
 train_residuals = results.resid
-print(type(train_residuals))
+#train_residuals.to_csv('../output/VAR_results/VAR_train_residuals.csv', index=False)
 
 
 
