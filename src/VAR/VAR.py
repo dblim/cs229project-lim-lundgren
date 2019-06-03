@@ -62,19 +62,11 @@ def optimal_p(endog_y,max_p):
     MSE_dictionary = dict(zip(p_list, MSE_list))
     return min(MSE_dictionary, key=MSE_dictionary.get)
 
-# Try max_p = 200, maximum hyperparameter
-max_p = 200
-
+# Try max_p = 50, maximum hyperparameter to search
+max_p = 50
 print(optimal_p(endog_y,max_p))
 
-
-
-
-
-
-
-
-
+# We get an optimal hyperparameter of p=1
 
 # This function is only needed if we want to call training residuals from the VAR model for a particular p
 
@@ -90,9 +82,4 @@ def get_training_residual(data,tickers , p):
     # Rename columns as residuals
     residuals.columns = [ticker + "_residuals" for ticker in tickers]
     return residuals
-
-"""train_residuals = results.resid
- train_residuals = pd.DataFrame(train_residuals)
- train_residuals.columns = [ticker + "_residuals" for ticker in tickers]
- train_residuals.to_csv('../output/VAR_results/VAR_train_residuals_order' + p + ' .csv', index=False)"""
 
