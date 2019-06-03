@@ -192,3 +192,23 @@ def preprocess_arima(data, tickers: list, ground_features: int = 5, new_features
         header_data.append(ticker + '_sin_returns')
         header_open.append(ticker + '_open')
     return pd.DataFrame(new_data, columns=header_data), pd.DataFrame(open_prices, columns=header_open)
+
+def combine_ts_with_path(base_path, tickers: list):
+    stock0 = tickers[0]
+    path = base_path+stock0+'.csv'
+    data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
+
+    renamer = {'close': stock0+'_close', 'high': stock0+'_high', 'low': stock0+'_low',
+               'open': stock0+'_open', 'volume': stock0+'_volume', }
+    data = data.rename(columns=renamer)
+    tickers.remove(tickers[0])
+    for str in tickers:
+        path = base_path+str+'.csv'
+        new_data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
+        renamer = {'close': str+'_close', 'high': str+'_high', 'low': str+'_low',
+                   'open': str + '_open', 'volume': str+'_volume', }
+        new_data = new_data.rename(columns=renamer)
+
+        data = pd.concat([data, new_data], axis=1, sort=True)
+    tickers.insert(0, stock0)
+    return data.interpolate()[1:data.shape[0]]
