@@ -29,6 +29,23 @@ exog_x_val = val_data.drop(columns=y_list)
 endog_y_test = test_data[y_list]
 exog_x_test = test_data.drop(columns = y_list)
 
+# Model with p = 1
+VAR_model = VAR(endog_y)
+results = VAR_model.fit(1)
+
+
+# Predictions
+predictions = results.forecast(endog_y.values, steps = n)
+train_residuals = results.resid
+print(type(train_residuals))
+
+
+
+
+
+
+# This function is only needed if we want to call training residuals from the VAR model.
+
 def get_training_residual(data,tickers , p):
     """Given data, this function returns a pandas dataframe on the TRAINING residuals
         from a VAR model of order p. More precisely, suppose that we have training data
@@ -43,17 +60,7 @@ def get_training_residual(data,tickers , p):
     return residuals
 
 # Print training residuals for p = 2
-print(get_training_residual(endog_y, tickers, 2))
+#print(get_training_residual(endog_y, tickers, 2))
 
 
-
-# Prints MSE error for each p.
-"""for p in range(len(predictions)):
-    for i, ticker in  enumerate( tickers):
-        MSE = sum((predictions[p-1][:, i] - endog_y_val.values[:, i])**2)/endog_y_val.shape[0]
-        print("For p = {} and {}, ".format(p+1, ticker) + "MSE error is", MSE)"""
-
-"""def prediction_function(values, p):
-    model = VAR(values)
-    return [ model.fit(i).forecast(values, steps=10) for i in range(1,p)]"""
 
