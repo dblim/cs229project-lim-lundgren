@@ -6,17 +6,15 @@ from statsmodels.tsa.api import VAR
 
 """In this script, we will get the training residuals for VAR. These will then be trained on using RNN/LSTM"""
 
-Justin_data : bool=True
+justin_data : bool=True
 # data
-if Justin_data is True:
-    path = '../data/sectors/Information Technology'
+if justin_data is True:
+    path = '../data/sectors/Information Technology/'
     tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
-if Justin_data is False:
+if justin_data is False:
     path = '../data/top_stocks/'
     tickers = ['AAP', 'AES']
-
-
 
 data = combine_ts_returns(path, tickers)
 
@@ -39,20 +37,35 @@ exog_x_val = val_data.drop(columns=y_list)
 endog_y_test = test_data[y_list]
 exog_x_test = test_data.drop(columns = y_list)
 
-# Model with p = 1
-VAR_model = VAR(endog_y)
-results = VAR_model.fit(1)
+# Validation start and end dates.
+val_start_index = val_data.index.min()
+val_end_index = val_data.index.max()
 
-# Training residuals
-train_residuals = results.resid
-train_residuals = pd.DataFrame(train_residuals)
-train_residuals.columns = [ticker + "_residuals" for ticker in tickers]
-train_residuals.to_csv('../output/VAR_results/VAR_train_residuals.csv', index=False)
+# Hyperparameter searching
 
-# Predictions
-predictions = results.forecast(endog_y.values, steps = endog_y.shape[0])
+# The function below returns the average MSE given a batch of stocks for a particular value of p
+# Recall when we do predictions, we should predict over the length of time that is the validation set
 
-print(predictions)
+def var_mse_p(endog_y, p):
+        val_num_steps = len(endog_y_val)
+        num_stocks = len(tickers)
+        results = VAR(endog_y).fit(p)
+        predictions = results.forecast(endog_y.values, steps = val_num_steps)
+        MSE = np.sum(predictions - endog_y_val.values, axis = 0)**2/val_num_steps
+        MSE_average = np.sum(MSE)/num_stocks
+        return (MSE_average)
+
+# We now get the smallest MSE over all p in range (1, max_p)
+def optimal_p(endog_y,max_p):
+    p_list = ['{}'.format(p) for p in range(1,max_p)]
+    MSE_list = [var_mse_p(endog_y,p) for p in range(1, max_p)]
+    MSE_dictionary = dict(zip(p_list, MSE_list))
+    return min(MSE_dictionary, key=MSE_dictionary.get)
+
+# Try max_p = 200, maximum hyperparameter
+max_p = 200
+
+print(optimal_p(endog_y,max_p))
 
 
 
@@ -60,7 +73,10 @@ print(predictions)
 
 
 
-# This function is only needed if we want to call training residuals from the VAR model.
+
+
+
+# This function is only needed if we want to call training residuals from the VAR model for a particular p
 
 def get_training_residual(data,tickers , p):
     """Given data, this function returns a pandas dataframe on the TRAINING residuals
@@ -75,8 +91,8 @@ def get_training_residual(data,tickers , p):
     residuals.columns = [ticker + "_residuals" for ticker in tickers]
     return residuals
 
-# Print training residuals for p = 2
-#print(get_training_residual(endog_y, tickers, 2))
-
-
+"""train_residuals = results.resid
+ train_residuals = pd.DataFrame(train_residuals)
+ train_residuals.columns = [ticker + "_residuals" for ticker in tickers]
+ train_residuals.to_csv('../output/VAR_results/VAR_train_residuals_order' + p + ' .csv', index=False)"""
 
