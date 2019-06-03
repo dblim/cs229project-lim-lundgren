@@ -6,9 +6,19 @@ from statsmodels.tsa.api import VAR
 
 """In this script, we will get the training residuals for VAR. These will then be trained on using RNN/LSTM"""
 
+Justin_data : bool=True
 # data
-tickers = ['AAP', 'AMD']
-data = combine_ts_returns(tickers)
+if Justin_data is True:
+    path = '../data/sectors/Information Technology'
+    tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+
+if Justin_data is False:
+    path = '../data/top_stocks/'
+    tickers = ['AAP', 'AES']
+
+
+
+data = combine_ts_returns(path, tickers)
 
 # Split data
 n = np.shape(data)[0]
@@ -33,12 +43,17 @@ exog_x_test = test_data.drop(columns = y_list)
 VAR_model = VAR(endog_y)
 results = VAR_model.fit(1)
 
-# Predictions and residuals
-predictions = results.forecast(endog_y.values, steps = endog_y.shape[0])
+# Training residuals
 train_residuals = results.resid
 train_residuals = pd.DataFrame(train_residuals)
 train_residuals.columns = [ticker + "_residuals" for ticker in tickers]
 train_residuals.to_csv('../output/VAR_results/VAR_train_residuals.csv', index=False)
+
+# Predictions
+predictions = results.forecast(endog_y.values, steps = endog_y.shape[0])
+
+print(predictions)
+
 
 
 
