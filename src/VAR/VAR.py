@@ -1,4 +1,4 @@
-from utils.py import combine_ts_returns
+from utils import combine_ts_returns
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
