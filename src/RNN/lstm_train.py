@@ -1,3 +1,3 @@
-from RNN.lstm_multi import lstm_model
-tickers = ['AAP', 'MRK', 'NRG', 'ORLY']
-test = lstm_model(tickers, epochs=100)
+from RNN.lstm_single import lstm_model
+tickers = 'ABT'#, 'ABT']#, 'ALGN', 'SYK', 'UNH', 'VAR', 'WAT', 'ZTS']
+test = lstm_model(tickers, epochs=1)

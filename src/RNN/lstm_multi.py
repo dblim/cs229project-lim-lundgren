@@ -1,17 +1,22 @@
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
+from keras import optimizers
 import matplotlib.pyplot as plt
 import numpy as np
 from utils import minutizer, combine_ts, preprocess_arima
 
 
 def lstm_model(stocks: list,
-               lookback: int = 24,
+               lookback: int = 36,
                epochs: int = 10,
                batch_size: int = 96,
                ground_features: int = 8):
     # Import data
-    data, opens = preprocess_arima(minutizer(combine_ts(stocks), split=5), stocks)
+    data = minutizer(combine_ts(stocks), split=5)
+    #data = read_csv('../data/hc_data.csv')
+
+    data, opens = preprocess_arima(data, stocks)
+
 
     # Transform data
     n, d = data.shape
@@ -24,8 +29,6 @@ def lstm_model(stocks: list,
             X[i, :, j] = data.iloc[i:(i+lookback), j]
             if j < int(d/ground_features):
                 Y[i, j] = data.iloc[lookback + i, j * ground_features]
-                #if data.iloc[lookback + i, j * ground_features] > 0:
-                #    Y[i, j] = 1
 
     X_train = X[0: int(n * train_val_test_split['train'])]
     y_train = Y[0: int(n * train_val_test_split['train'])]
@@ -39,42 +42,47 @@ def lstm_model(stocks: list,
     # Initialising the RNN
     model = Sequential()
 
-    # Adding layers. LSTM(25) --> Dropout(0.2) x 4
-    model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], d)))
+    # Adding layers. LSTM(n) --> Dropout(p)
+    model.add(LSTM(units=80, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
+    model.add(Dropout(0.5))
+
+    model.add(LSTM(units=40, return_sequences=True, use_bias=False))
+    model.add(Dropout(0.3))
+
+    model.add(LSTM(units=20, return_sequences=True, use_bias=False))
     model.add(Dropout(0.2))
 
-    model.add(LSTM(units=50, return_sequences=True))
-    model.add(Dropout(0.2))
-
-    #model.add(LSTM(units=25, return_sequences=True))
-    #model.add(Dropout(0.2))
-
-    model.add(LSTM(units=50))
-    #model.add(Dropout(0.2))
+    model.add(LSTM(units=10, use_bias=False))
 
     # Output layer
-    model.add(Dense(units=int(d/ground_features), activation='linear'))
+    model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
 
-    # Run
-    model.compile(optimizer='adam', loss='mean_squared_error')  # , metrics=['accuracy'])
+    # Optimizer
+    adam_opt = optimizers.adam(lr=0.001)
 
-    # Fitting the RNN to the Training set
+    # Compile
+    model.compile(optimizer=adam_opt, loss='mean_squared_error')
+
+    # Fit
     model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size)
 
     # Validate
-    predicted_stock_price = model.predict(X_val)
+    predicted_stock_returns = model.predict(X_val)
 
     for i, ticker in enumerate(stocks):
-        pred = (predicted_stock_price[:, i] + 1) * opens_val.values[:, i]
+        pred = (predicted_stock_returns[:, i] + 1) * opens_val.values[:, i]
         real = (y_val[:, i] + 1) * opens_val.values[:, i]
+        #
+        predcted_returns = predicted_stock_returns[:, i].copy()
         actual_returns = y_val[:, i].copy()
+        #
         MSE = sum((pred - real) ** 2) / y_val.shape[0]
         dummy_mse = sum((real[1: real.shape[0]] - real[0: real.shape[0] - 1])**2)/(y_val.shape[0] - 1)
         print('=========', ticker, '=========')
         print('Dummy MSE:', dummy_mse)
         print('MSE:', MSE)
         print('--')
-        pred_zero_one = predicted_stock_price[:, i]
+        pred_zero_one = predicted_stock_returns[:, i]
         pred_zero_one[pred_zero_one > 0] = 1
         pred_zero_one[pred_zero_one < 0] = 0
         print('Predicted ones:', np.mean(pred_zero_one))
@@ -97,10 +105,11 @@ def lstm_model(stocks: list,
         obvious_strategy = np.multiply(pred_zero_one, actual_returns)
         dummy_return = 1
         strategy_return = 1
+        threshold = np.percentile(predcted_returns, 10)
         for j in range(pred_zero_one.shape[0]):
             dummy_return *= (1 + actual_returns[j])
-            if obvious_strategy[j] > 0:
-                strategy_return *= (1 + obvious_strategy[j]) * max(0, obvious_strategy[j])*100
+            if predcted_returns[j] > threshold:
+                strategy_return *= (1 + actual_returns[j])
         print('Dummy return:', (dummy_return - 1) * 100)
         print('Dummy standard deviation: ', np.std(actual_returns))
         print('Dummy Sharpe Ration:', np.mean(actual_returns)/np.std(actual_returns))
@@ -115,4 +124,10 @@ def lstm_model(stocks: list,
         plt.ylabel(ticker + ' Stock Price')
         plt.legend()
         plt.savefig('../output/RNN_results/LSTM_new_test_' + ticker + '.png')
+        plt.close()
+
+        plt.hist(actual_returns, bins=20, label='Real')
+        plt.hist(predcted_returns, bins=20, label='Predicted')
+        plt.legend()
+        plt.savefig('../output/RNN_results/LSTM_new_test_histogram' + ticker + '.png')
         plt.close()

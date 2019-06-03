@@ -94,14 +94,14 @@ def y_numeric_to_vector(data, k):
 
 def combine_ts(tickers: list):
     stock0 = tickers[0]
-    path = '../data/top_stocks/'+stock0+'.csv'
+    path = '../data/Health-Care/'+stock0+'.csv'
     data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
     renamer = {'close': stock0+'_close', 'high': stock0+'_high', 'low': stock0+'_low',
                'open': stock0+'_open', 'volume': stock0+'_volume', }
     data = data.rename(columns=renamer)
     tickers.remove(tickers[0])
     for str in tickers:
-        path = '../data/top_stocks/'+str+'.csv'
+        path = '../data/Health-Care/'+str+'.csv'
         new_data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
         renamer = {'close': str+'_close', 'high': str+'_high', 'low': str+'_low',
                    'open': str + '_open', 'volume': str+'_volume', }
@@ -123,7 +123,7 @@ def minutizer(data, split: int = 5, ground_features: int = 5):
             new_data.iloc[i, j * ground_features + 1] = max([data.iloc[split*i+k, j * ground_features + 1]
                                                              for k in range(split)])
             # Low
-            new_data.iloc[i, j * ground_features + 2] = max([data.iloc[split * i + k, j * ground_features + 2]
+            new_data.iloc[i, j * ground_features + 2] = min([data.iloc[split * i + k, j * ground_features + 2]
                                                              for k in range(split)])
             # Open
             new_data.iloc[i, j * ground_features + 3] = data.iloc[split*i, j * ground_features + 3]
@@ -132,7 +132,7 @@ def minutizer(data, split: int = 5, ground_features: int = 5):
     return new_data
 
 
-def preprocess_arima(data, tickers: list, ground_features: int = 5, new_features: int = 8):
+def preprocess_2(data, ticker, ground_features: int = 5, new_features: int = 5):
     n, d = data.shape
     new_d = int(d/ground_features)
     new_data = np.zeros((n, new_d * new_features))
@@ -143,31 +143,27 @@ def preprocess_arima(data, tickers: list, ground_features: int = 5, new_features
         new_data[:, new_features * i + 1] = \
             data.iloc[:, ground_features * i + 1] - data.iloc[:, ground_features * i + 2]  # Spread
         new_data[:, new_features * i + 2] = \
-            data.iloc[:, ground_features * i + 4] - np.mean(data.iloc[:, ground_features * i + 4])  # Volume
+            data.iloc[:, ground_features * i + 4]  # Volume
         new_data[:, new_features * i + 3] = \
-            data.iloc[:, ground_features * i + 3] - np.mean(data.iloc[:, ground_features * i + 3])  # normalized open
+            data.iloc[:, ground_features * i + 3]  # Open
         # Laguerre polynomials
-        new_data[:, new_features * i + 4] = np.exp(- 0.5 * new_data[:, new_features * i + 3])
-        new_data[:, new_features * i + 5] = new_data[:, new_features * i + 4] * (1 - new_data[:, new_features * i + 3])
-        new_data[:, new_features * i + 6] = new_data[:, new_features * i + 4] * \
+        """
+        new_data[:, new_features * i + 3] = np.exp(- 0.5 * new_data[:, new_features * i + 3])
+        new_data[:, new_features * i + 4] = new_data[:, new_features * i + 4] * (1 - new_data[:, new_features * i + 3])
+        new_data[:, new_features * i + 5] = new_data[:, new_features * i + 4] * \
             (1 - 2 * new_data[:, new_features * i + 3] + 0.5 * np.square(new_data[:, new_features * i + 3]))
-        new_data[:, new_features * i + 7] = \
+        """
+        new_data[:, new_features * i + 4] = \
             np.sin(2 * np.pi * new_data[:, new_features * i + 3]/np.max(new_data[:, new_features * i + 3]))  # Sin
 
         open_prices[:, i] = data.iloc[:, ground_features * i + 3]
     header_data = []
-    header_open = []
-    for ticker in tickers:
-        header_data.append(ticker + '_returns')  # 0
-        header_data.append(ticker + '_spread')  # 1
-        header_data.append(ticker + '_volume')  # 2 Normalized
-        header_data.append(ticker + '_normalized_open')  # 3
-        header_data.append(ticker + '_exp1')  # 5
-        header_data.append(ticker + '_exp2')  # 6
-        header_data.append(ticker + '_exp3')  # 7
-        header_data.append(ticker + '_sin_returns')  # 8
-        header_open.append(ticker + '_open')
-    return pd.DataFrame(new_data, columns=header_data), pd.DataFrame(open_prices, columns=header_open)
+    header_data.append(ticker + '_returns')  # 0
+    header_data.append(ticker + '_spread')  # 1
+    header_data.append(ticker + '_volume')  # 2
+    header_data.append(ticker + '_open')  # 3
+    header_data.append(ticker + '_sin_open')  # 8
+    return pd.DataFrame(new_data, columns=header_data)
 
 
 def mvp(sigma):
