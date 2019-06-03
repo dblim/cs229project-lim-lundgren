@@ -36,7 +36,7 @@ results = VAR_model.fit(1)
 # Predictions
 predictions = results.forecast(endog_y.values, steps = n)
 train_residuals = results.resid
-#train_residuals.to_csv('../output/VAR_results/VAR_train_residuals.csv', index=False)
+train_residuals.to_csv('../output/VAR_results/VAR_train_residuals.csv', index=False)
 
 
 
