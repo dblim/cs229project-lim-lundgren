@@ -2,6 +2,7 @@ from statsmodels.tsa.statespace.varmax import VARMAX
 from utils import minutizer, preprocess_2
 import pandas as pd
 from pandas import read_csv
+from numpy import subtract
 
 """ THIS IS WRONG!!!!"""
 
@@ -38,8 +39,11 @@ def varmax(ticker: str,
     model = VARMAX(endog=endog_y.values, exog=exog_x.values)
     model_fit = model.fit(disp=False, order=(p, q))
 
-    # make prediction
+    # validate
     predictions_val = model_fit.forecast(steps=exog_x_val.shape[0], exog=exog_x_val.values)
+    print('MSE:', sum(sum(subtract(predictions_val, endog_y_val)**2)))
+
+    # Test -- NOTE that this is just here for simplicity
     predictions_test = model_fit.forecast(steps=exog_x_test.shape[0], exog=exog_x_test.values)
 
     # Save

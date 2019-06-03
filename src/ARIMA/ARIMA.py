@@ -4,20 +4,22 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Get data
+tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+
+data = preprocess_2(minutizer(combine_ts(tickers), split=5), tickers)
+n, _ = data.shape
+
 def varmax(tickers,
            p: int = 2,
            q: int = 0,):
-    data, _ = preprocess_2(minutizer(combine_ts(tickers), split=5), tickers)
-    n, _ = data.shape
+    #data = preprocess_2(minutizer(combine_ts(tickers), split=5), tickers)
+    #n, _ = data.shape
 
     # Split data
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
     train_data = data[0: int(n*train_val_test_split['train'])]
     val_data = data[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
     test_data = data[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
-
-    #opens_val = opens[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
 
     # split data in X and Y
     y_list = [ticker+'_returns' for ticker in tickers]
@@ -35,19 +37,27 @@ def varmax(tickers,
     exog_x_test = test_data.drop(columns=y_list)
 
     # Fit model
-    model = VARMAX(endog=endog_y.values, exog=exog_x.values)
-    model_fit = model.fit(disp=False, order=(p, q))
-    # make prediction
+    model = VARMAX(endog=endog_y.values, exog=exog_x.values, order=(p, q))
+    model_fit = model.fit(disp=False, order=(p, q), maxiter=200, method='nm')
+    # Validate
     predictions_val = model_fit.forecast(steps=exog_x_val.shape[0], exog=exog_x_val.values)
+    MSE = 0
+    for i in range(endog_y_val.shape[0]):
+        for j in range(endog_y_val.shape[1]):
+            MSE += (endog_y_val.values[i, j] - float(predictions_val[i][j]))**2
+    print('p:', p, ' MSE:', MSE)
+
+    # Test -- this is just here for simplcity!!
     predictions_test = model_fit.forecast(steps=exog_x_test.shape[0], exog=exog_x_test.values)
+
     for i, ticker in enumerate(tickers):
-        real_val = endog_y_val[ticker]
+        real_val = endog_y_val.values[:, i]
         pred_val = predictions_val[:, i]
         pd.DataFrame(real_val).to_csv('../output/ARIMA_results/predictions/val_files/'+ticker+'_val_predictions.csv',
                                       index=False)
         pd.DataFrame(pred_val).to_csv('../output/ARIMA_results/predictions/val_files/' + ticker + '_val_real.csv',
                                       index=False)
-        real_test = endog_y_test[ticker]
+        real_test = endog_y_test.values[:, i]
         pred_test = predictions_test[:, i]
         pd.DataFrame(real_test).to_csv('../output/ARIMA_results/predictions/test_files/' + ticker + '_test_predictions.csv',
                                        index=False)
@@ -93,3 +103,8 @@ def varmax(tickers,
             plt.legend()
             plt.savefig('../output/ARIMA_results/VARMAX_test_' + ticker + '.png')
             plt.close()
+
+
+for i in range(11):
+    p = (i + 1) * 2
+    varmax(tickers, p=p)

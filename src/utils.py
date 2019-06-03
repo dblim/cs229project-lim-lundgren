@@ -94,14 +94,14 @@ def y_numeric_to_vector(data, k):
 
 def combine_ts(tickers: list):
     stock0 = tickers[0]
-    path = '../data/Health-Care/'+stock0+'.csv'
+    path = '../data/sectors/Information-Technology/'+stock0+'.csv'
     data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
     renamer = {'close': stock0+'_close', 'high': stock0+'_high', 'low': stock0+'_low',
                'open': stock0+'_open', 'volume': stock0+'_volume', }
     data = data.rename(columns=renamer)
     tickers.remove(tickers[0])
     for str in tickers:
-        path = '../data/Health-Care/'+str+'.csv'
+        path = '../data/sectors/Information-Technology/'+str+'.csv'
         new_data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
         renamer = {'close': str+'_close', 'high': str+'_high', 'low': str+'_low',
                    'open': str + '_open', 'volume': str+'_volume', }
@@ -132,7 +132,7 @@ def minutizer(data, split: int = 5, ground_features: int = 5):
     return new_data
 
 
-def preprocess_2(data, ticker, ground_features: int = 5, new_features: int = 5):
+def preprocess_2(data, tickers, ground_features: int = 5, new_features: int = 5):
     n, d = data.shape
     new_d = int(d/ground_features)
     new_data = np.zeros((n, new_d * new_features))
@@ -143,9 +143,9 @@ def preprocess_2(data, ticker, ground_features: int = 5, new_features: int = 5):
         new_data[:, new_features * i + 1] = \
             data.iloc[:, ground_features * i + 1] - data.iloc[:, ground_features * i + 2]  # Spread
         new_data[:, new_features * i + 2] = \
-            data.iloc[:, ground_features * i + 4]  # Volume
+            data.iloc[:, ground_features * i + 4] - np.mean(data.iloc[:, ground_features * i + 4])# Volume
         new_data[:, new_features * i + 3] = \
-            data.iloc[:, ground_features * i + 3]  # Open
+            data.iloc[:, ground_features * i + 3] - np.mean(data.iloc[:, ground_features * i + 3])  # Open
         # Laguerre polynomials
         """
         new_data[:, new_features * i + 3] = np.exp(- 0.5 * new_data[:, new_features * i + 3])
@@ -158,15 +158,10 @@ def preprocess_2(data, ticker, ground_features: int = 5, new_features: int = 5):
 
         open_prices[:, i] = data.iloc[:, ground_features * i + 3]
     header_data = []
-    header_data.append(ticker + '_returns')  # 0
-    header_data.append(ticker + '_spread')  # 1
-    header_data.append(ticker + '_volume')  # 2
-    header_data.append(ticker + '_open')  # 3
-    header_data.append(ticker + '_sin_open')  # 8
+    for ticker in tickers:
+        header_data.append(ticker + '_returns')  # 0
+        header_data.append(ticker + '_spread')  # 1
+        header_data.append(ticker + '_volume')  # 2
+        header_data.append(ticker + '_open')  # 3
+        header_data.append(ticker + '_sin_open')  # 8
     return pd.DataFrame(new_data, columns=header_data)
-
-
-def mvp(sigma):
-    numerator = np.dot(np.linalg.inv(sigma), np.ones((sigma.shape[0], 1)))
-    denominator = np.dot(np.ones((1, sigma.shape[0])), np.dot(np.linalg.inv(sigma), np.ones((sigma.shape[0], 1))))
-    return numerator/denominator
