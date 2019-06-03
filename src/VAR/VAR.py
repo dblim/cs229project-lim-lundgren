@@ -33,12 +33,12 @@ exog_x_test = test_data.drop(columns = y_list)
 VAR_model = VAR(endog_y)
 results = VAR_model.fit(1)
 
-# Predictions
+# Predictions and residuals
 predictions = results.forecast(endog_y.values, steps = n)
 train_residuals = results.resid
-train_residuals = pd.DataFrame(train_residuals)
-print(train_residuals)
-train_residuals.to_csv('../output/VAR_results/VAR_train_residuals.csv', index=False)
+y_residuals = [ticker + '_residual' for ticker in tickers]
+train_residuals = pd.DataFrame(train_residuals,columns = y_residuals)
+train_residuals.to_csv('../output/VAR_results/VAR_train_residuals.csv', index=False, )
 
 
 
