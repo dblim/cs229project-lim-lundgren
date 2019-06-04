@@ -3,19 +3,19 @@ from keras.layers import Dense, LSTM, Dropout
 from keras import optimizers
 import matplotlib.pyplot as plt
 import numpy as np
-from utils import minutizer, combine_ts, preprocess_arima
+from utils import minutizer, combine_ts, preprocess_2
 
 
 def lstm_model(stocks: list,
                lookback: int = 36,
-               epochs: int = 10,
+               epochs: int = 100,
                batch_size: int = 96,
-               ground_features: int = 8):
+               ground_features: int = 5):
     # Import data
     data = minutizer(combine_ts(stocks), split=5)
     #data = read_csv('../data/hc_data.csv')
 
-    data, opens = preprocess_arima(data, stocks)
+    data = preprocess_2(data, stocks)
 
 
     # Transform data
@@ -36,48 +36,52 @@ def lstm_model(stocks: list,
     X_val = X[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
     y_val = Y[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
 
-    opens_val = opens[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
+    #opens_val = opens[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
 
 
     # Initialising the RNN
     model = Sequential()
 
     # Adding layers. LSTM(n) --> Dropout(p)
-    model.add(LSTM(units=80, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
-    model.add(Dropout(0.5))
+    model.add(LSTM(units=1, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
+    model.add(Dropout(0.1))
 
-    model.add(LSTM(units=40, return_sequences=True, use_bias=False))
-    model.add(Dropout(0.3))
+    model.add(LSTM(units=2, return_sequences=True, use_bias=False))
+    model.add(Dropout(0.1))
 
-    model.add(LSTM(units=20, return_sequences=True, use_bias=False))
-    model.add(Dropout(0.2))
+    model.add(LSTM(units=int(d/ground_features), return_sequences=False, use_bias=False))
+    model.add(Dropout(0.1))
 
-    model.add(LSTM(units=10, use_bias=False))
+    #model.add(LSTM(units=1, use_bias=False))
+    #model.add(Dropout(0.1))
 
     # Output layer
-    model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
+    #model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
 
     # Optimizer
-    adam_opt = optimizers.adam(lr=0.001)
+    adam_opt = optimizers.adam(lr=0.001, decay=0.99)
 
     # Compile
     model.compile(optimizer=adam_opt, loss='mean_squared_error')
 
+    print(model.summary())
+
     # Fit
-    model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size)
+    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
 
     # Validate
     predicted_stock_returns = model.predict(X_val)
 
     for i, ticker in enumerate(stocks):
-        pred = (predicted_stock_returns[:, i] + 1) * opens_val.values[:, i]
-        real = (y_val[:, i] + 1) * opens_val.values[:, i]
+        #pred = (predicted_stock_returns[:, i] + 1) * opens_val.values[:, i]
+        #real = (y_val[:, i] + 1) * opens_val.values[:, i]
         #
+        print(history.history['loss'])
         predcted_returns = predicted_stock_returns[:, i].copy()
         actual_returns = y_val[:, i].copy()
         #
-        MSE = sum((pred - real) ** 2) / y_val.shape[0]
-        dummy_mse = sum((real[1: real.shape[0]] - real[0: real.shape[0] - 1])**2)/(y_val.shape[0] - 1)
+        MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
+        dummy_mse = sum(actual_returns**2)/(y_val.shape[0])
         print('=========', ticker, '=========')
         print('Dummy MSE:', dummy_mse)
         print('MSE:', MSE)
@@ -117,6 +121,7 @@ def lstm_model(stocks: list,
         print('Strategy standard deviation: ', np.std(obvious_strategy))
         print('Strategy Sharpe Ration:', np.mean(obvious_strategy) / np.std(obvious_strategy))
 
+        """
         plt.plot(real, color='red', label='Real ' + ticker + ' Stock Price')
         plt.plot(pred, color='blue', label='Predicted ' + ticker + ' Stock Price')
         plt.title(ticker + ' Stock Price Prediction')
@@ -125,9 +130,14 @@ def lstm_model(stocks: list,
         plt.legend()
         plt.savefig('../output/RNN_results/LSTM_new_test_' + ticker + '.png')
         plt.close()
+        """
 
-        plt.hist(actual_returns, bins=20, label='Real')
-        plt.hist(predcted_returns, bins=20, label='Predicted')
+        plt.hist(actual_returns, bins=20, label='Real', density=True)
+        plt.hist(predcted_returns, bins=20, label='Predicted', density=True)
+        plt.title(ticker)
         plt.legend()
         plt.savefig('../output/RNN_results/LSTM_new_test_histogram' + ticker + '.png')
         plt.close()
+
+
+lstm_model(['AAPL', 'ACN'])

@@ -48,29 +48,27 @@ def lstm_model(stock: str,
     model = Sequential()
 
     # Adding layers. LSTM(units) --> Dropout(p)
-    model.add(LSTM(units=40, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
+    model.add(LSTM(units=6, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=20, return_sequences=True, use_bias=False))
+    model.add(LSTM(units=4, return_sequences=True, use_bias=False))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=10, return_sequences=True, use_bias=False))
-    model.add(Dropout(dropout_rate))
-
-    model.add(LSTM(units=5, use_bias=False))
+    model.add(LSTM(units=2, use_bias=False))
     model.add(Dropout(dropout_rate))
 
     # Output layer
     model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
 
     # Optimizer
-    adam_opt = optimizers.adam(lr=learning_rate)
+    adam_opt = optimizers.adam(lr=learning_rate, decay=0.999)
 
     # Compile
     model.compile(optimizer=adam_opt, loss='mean_squared_error')
+    print(model.summary())
 
     # Fit
-    model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size)
+    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
 
     # Validate
     predicted_stock_returns = model.predict(X_val)
@@ -82,3 +80,51 @@ def lstm_model(stock: str,
     pd.DataFrame(model.predict(X_test)).to_csv('../output/RNN_results/predictions/test_files/' + stock +
                                                '_test_predictions.csv', index=False)
     pd.DataFrame(y_test).to_csv('../output/RNN_results/predictions/test_files/' + stock + '_test_real.csv', index=False)
+
+
+    print(history.history['loss'])
+    predcted_returns = predicted_stock_returns.copy()
+    actual_returns = y_val.copy()
+    #
+    MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
+    dummy_mse = sum(actual_returns ** 2) / (y_val.shape[0])
+    print('=========', stock, '=========')
+    print('Dummy MSE:', dummy_mse)
+    print('MSE:', MSE)
+    print('--')
+    pred_zero_one = predicted_stock_returns.copy()
+    pred_zero_one[pred_zero_one > 0] = 1
+    pred_zero_one[pred_zero_one < 0] = 0
+    print('Predicted ones:', np.mean(pred_zero_one))
+    real_zero_one = y_val.copy()
+    real_zero_one[real_zero_one > 0] = 1
+    real_zero_one[real_zero_one < 0] = 0
+    print('Real ones:', np.mean(real_zero_one))
+    TP = np.sum(np.logical_and(pred_zero_one == 1, real_zero_one == 1))
+    TN = np.sum(np.logical_and(pred_zero_one == 0, real_zero_one == 0))
+    FP = np.sum(np.logical_and(pred_zero_one == 1, real_zero_one == 0))
+    FN = np.sum(np.logical_and(pred_zero_one == 0, real_zero_one == 1))
+    print('True positive:', TP)
+    print('True Negative:', TN)
+    print('False positive:', FP)
+    print('False Negative:', FN)
+    print('Dummy guess true rate:', max(np.mean(real_zero_one), 1 - np.mean(real_zero_one)))
+    accuracy = (TP + TN) / (TP + TN + FP + FN)
+    print('Accuracy:', max(accuracy, 1 - accuracy))
+    print('--')
+    dummy_return = 1
+    strategy_return = 1
+    threshold = np.percentile(predcted_returns, 10)
+    obvious_strategy = actual_returns[predcted_returns > threshold]
+    for j in range(pred_zero_one.shape[0]):
+        dummy_return *= (1 + actual_returns[j])
+        if predcted_returns[j] > threshold:
+            strategy_return *= (1 + actual_returns[j])
+    print('Dummy return:', (dummy_return - 1) * 100)
+    print('Dummy standard deviation: ', np.std(actual_returns))
+    print('Dummy Sharpe Ration:', np.mean(actual_returns) / np.std(actual_returns))
+    print('Strategy return:', (strategy_return - 1) * 100)
+    print('Strategy standard deviation: ', np.std(obvious_strategy))
+    print('Strategy Sharpe Ration:', np.mean(obvious_strategy) / np.std(obvious_strategy))
+    print('Return Correlation:', np.corrcoef(predicted_stock_returns.T, y_val.values.T)[0][1])
+
