@@ -189,3 +189,6 @@ def lstm_model(stocks: list,
         print('Strategy standard deviation: ', np.std(obvious_strategy))
         print('Strategy Sharpe Ration:', np.mean(obvious_strategy) / np.std(obvious_strategy))
         print('Correlation:', np.corrcoef(predcted_returns.T, actual_returns.T)[0][1])
+
+tickers = ['XLNX', 'WDC']
+lstm_model(tickers)
