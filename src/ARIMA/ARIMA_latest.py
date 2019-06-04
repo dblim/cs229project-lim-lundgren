@@ -114,13 +114,18 @@ def varmax(tickers,
     # Fit model
     model = VARMAX(endog=endog_y.values, exog=exog_x.values, order=(p, q))
     model_fit = model.fit(disp=False, order=(p, q), maxiter=200, method='nm')
+    for p in range(1,10):
+        p += 1
+        for q in range(1,10):
+            q+= 1
+            print(model_fit.aic)
     # Validate
-    predictions_val = model_fit.forecast(steps=exog_x_val.shape[0], exog=exog_x_val.values)
-    MSE = 0
-    for i in range(endog_y_val.shape[0]):
-        for j in range(endog_y_val.shape[1]):
-            MSE += (endog_y_val.values[i, j] - float(predictions_val[i][j]))**2
-    print('p:', p, ' MSE:', MSE)
+    #predictions_val = model_fit.forecast(steps=exog_x_val.shape[0], exog=exog_x_val.values)
+    #MSE = 0
+    #for i in range(endog_y_val.shape[0]):
+    #    for j in range(endog_y_val.shape[1]):
+    #        MSE += (endog_y_val.values[i, j] - float(predictions_val[i][j]))**2
+    #print('p:', p, ' MSE:', MSE)
     '''
     # Test -- this is just here for simplcity!!
     predictions_test = model_fit.forecast(steps=exog_x_test.shape[0], exog=exog_x_test.values)
