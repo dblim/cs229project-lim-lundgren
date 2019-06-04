@@ -13,7 +13,6 @@ def lstm_model(stocks: list,
                ground_features: int = 5):
     # Import data
     data = minutizer(combine_ts(stocks), split=5)
-    #data = read_csv('../data/hc_data.csv')
 
     data = preprocess_2(data, stocks)
 
