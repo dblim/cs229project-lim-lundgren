@@ -1,6 +1,6 @@
-from keras.models import Sequential
-from keras.layers import Dense, LSTM, Dropout
-from keras import optimizers
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, LSTM, Dropout
+from tensorflow.keras import optimizers
 import numpy as np
 import pandas as pd
 #from utils import minutizer, combine_ts, preprocess_2_multi
