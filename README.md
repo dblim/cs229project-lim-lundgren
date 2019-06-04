@@ -1,4 +1,5 @@
-# cs229.project
+# CS 229 (Machine Learning, Spring 2019) Final Project: Asset management using LSTM-models for intraday
+# stock predictions. 
 
-Machine learning project for CS 229 Spring 2019, Stanford University. Joint with Justin Lundgren and Pablo Solis
+Joint with Justin Lundgren and Pablo Solis.
 
