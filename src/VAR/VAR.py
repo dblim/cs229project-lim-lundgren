@@ -1,9 +1,6 @@
-import sys
-sys.path.append('../')
 from utils import combine_ts_returns
 import pandas as pd
 import numpy as np
-
 import matplotlib.pyplot as plt
 from statsmodels.tsa.api import VAR
 
