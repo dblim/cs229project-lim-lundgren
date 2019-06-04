@@ -17,9 +17,9 @@ def preprocess_2_multi(data, tickers: list, ground_features: int = 5, new_featur
         new_data[:, new_features * i + 1] = \
             data.iloc[:, ground_features * i + 1] - data.iloc[:, ground_features * i + 2]  # Spread
         new_data[:, new_features * i + 2] = \
-            data.iloc[:, ground_features * i + 4] #- np.mean(data.iloc[:, ground_features * i + 4])# Volume
+            data.iloc[:, ground_features * i + 4] - np.mean(data.iloc[:, ground_features * i + 4])  # Volume
         new_data[:, new_features * i + 3] = \
-            data.iloc[:, ground_features * i + 3] #- np.mean(data.iloc[:, ground_features * i + 3])  # Open
+            data.iloc[:, ground_features * i + 3] - np.mean(data.iloc[:, ground_features * i + 3])  # Open
         new_data[:, new_features * i + 4] = \
             np.sin(2 * np.pi * new_data[:, new_features * i + 3]/np.max(new_data[:, new_features * i + 3]))  # Sin
 
@@ -78,7 +78,7 @@ def combine_ts(tickers: list):
 
 def lstm_model(stocks: list,
                lookback: int = 24,
-               epochs: int = 1,
+               epochs: int = 100,
                batch_size: int = 96,
                learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
@@ -190,5 +190,5 @@ def lstm_model(stocks: list,
         print('Strategy Sharpe Ration:', np.mean(obvious_strategy) / np.std(obvious_strategy))
         print('Correlation:', np.corrcoef(predcted_returns.T, actual_returns.T)[0][1])
 
-tickers = ['XLNX', 'WDC']
+tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 lstm_model(tickers)

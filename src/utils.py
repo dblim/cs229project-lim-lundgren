@@ -205,9 +205,9 @@ def preprocess_2_multi(data, tickers: list, ground_features: int = 5, new_featur
         new_data[:, new_features * i + 1] = \
             data.iloc[:, ground_features * i + 1] - data.iloc[:, ground_features * i + 2]  # Spread
         new_data[:, new_features * i + 2] = \
-            data.iloc[:, ground_features * i + 4] #- np.mean(data.iloc[:, ground_features * i + 4])# Volume
+            data.iloc[:, ground_features * i + 4] - np.mean(data.iloc[:, ground_features * i + 4])# Volume
         new_data[:, new_features * i + 3] = \
-            data.iloc[:, ground_features * i + 3] #- np.mean(data.iloc[:, ground_features * i + 3])  # Open
+            data.iloc[:, ground_features * i + 3] - np.mean(data.iloc[:, ground_features * i + 3])  # Open
         new_data[:, new_features * i + 4] = \
             np.sin(2 * np.pi * new_data[:, new_features * i + 3]/np.max(new_data[:, new_features * i + 3]))  # Sin
 
