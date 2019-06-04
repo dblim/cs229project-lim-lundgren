@@ -11,7 +11,7 @@ def lstm_model(stock: str,
                lookback: int = 24,
                epochs: int = 100,
                batch_size: int = 96,
-               learning_rate: float = 0.001,
+               learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
                ground_features: int = 5):
     # Import data
@@ -22,8 +22,8 @@ def lstm_model(stock: str,
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
     data = data.values
     min_max_scalar = {i: (min(data[0: int(n*train_val_test_split['val']), i]),
-                          max(data[0: int(n*train_val_test_split['val']), i])) for i in range(1, d)}
-    for i in range(1, d):
+                          max(data[0: int(n*train_val_test_split['val']), i])) for i in range(2, d-1)}
+    for i in range(2, d-1):
         data[:, i] = (data[:, i] - min_max_scalar[i][0])/(min_max_scalar[i][1] - min_max_scalar[i][0])
 
     X = np.zeros((n - lookback, lookback, d))
@@ -48,27 +48,27 @@ def lstm_model(stock: str,
     model = Sequential()
 
     # Adding layers. LSTM(units) --> Dropout(p)
-    model.add(LSTM(units=6, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
+    model.add(LSTM(units=ground_features, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=4, return_sequences=True, use_bias=False))
+    model.add(LSTM(units=3, return_sequences=True, use_bias=False))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=2, use_bias=False))
+    model.add(LSTM(units=1, use_bias=False))
     model.add(Dropout(dropout_rate))
 
     # Output layer
-    model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
+    model.add(Dense(units=1, activation='linear', use_bias=True))
 
     # Optimizer
-    adam_opt = optimizers.adam(lr=learning_rate, decay=0.999)
+    adam_opt = optimizers.adam(lr=learning_rate)
 
     # Compile
     model.compile(optimizer=adam_opt, loss='mean_squared_error')
     print(model.summary())
 
     # Fit
-    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+    history = model.fit(X_train, y_train, epochs=epochs, validation_data=(X_val, y_val))
 
     # Validate
     predicted_stock_returns = model.predict(X_val)
@@ -126,5 +126,5 @@ def lstm_model(stock: str,
     print('Strategy return:', (strategy_return - 1) * 100)
     print('Strategy standard deviation: ', np.std(obvious_strategy))
     print('Strategy Sharpe Ration:', np.mean(obvious_strategy) / np.std(obvious_strategy))
-    print('Return Correlation:', np.corrcoef(predicted_stock_returns.T, y_val.values.T)[0][1])
+    print('Return Correlation:', np.corrcoef(predicted_stock_returns.T, y_val.T)[0][1])
 
