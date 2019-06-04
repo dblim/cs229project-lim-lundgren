@@ -129,15 +129,15 @@ def varmax(tickers,
     for i, ticker in enumerate(tickers):
         real_val = endog_y_val.values[:, i]
         pred_val = predictions_val[:, i]
-        pd.DataFrame(real_val).to_csv('../output/ARIMA_results/predictions/val_files/'+ticker+'_val_predictions.csv',
+        pd.DataFrame(real_val).to_csv('../output/VARMAX_results/predictions/val_files/'+ticker+'_val_predictions.csv',
                                       index=False)
-        pd.DataFrame(pred_val).to_csv('../output/ARIMA_results/predictions/val_files/' + ticker + '_val_real.csv',
+        pd.DataFrame(pred_val).to_csv('../output/VARMAX_results/predictions/val_files/' + ticker + '_val_real.csv',
                                       index=False)
         real_test = endog_y_test.values[:, i]
         pred_test = predictions_test[:, i]
-        pd.DataFrame(real_test).to_csv('../output/ARIMA_results/predictions/test_files/' + ticker + '_test_predictions.csv',
+        pd.DataFrame(real_test).to_csv('../output/VARMAX_results/predictions/test_files/' + ticker + '_test_predictions.csv',
                                        index=False)
-        pd.DataFrame(pred_test).to_csv('../output/ARIMA_results/predictions/test_files/' + ticker + '_test_real.csv',
+        pd.DataFrame(pred_test).to_csv('../output/VARMAX_results/predictions/test_files/' + ticker + '_test_real.csv',
                                        index=False)
     '''
     # Evaluate
@@ -177,7 +177,7 @@ def varmax(tickers,
             plt.xlabel('Time')
             plt.ylabel(ticker + ' Stock Price')
             plt.legend()
-            plt.savefig('../output/ARIMA_results/VARMAX_test_' + ticker + '.png')
+            plt.savefig('../output/VARMAX_results/VARMAX_test_' + ticker + '.png')
             plt.close()
 
 

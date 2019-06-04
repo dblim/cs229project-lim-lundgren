@@ -1,4 +1,4 @@
-from RNN_branch2.lstm_single_branch2 import lstm_model
+from LSTM.lstm_single import lstm_model
 from sklearn.metrics import zero_one_loss
 from pandas import read_csv
 import numpy as np

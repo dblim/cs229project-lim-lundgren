@@ -1,4 +1,4 @@
-from ARIMA_branch2.ARIMA_branch2 import varmax
+from VARMAX.ARIMA_branch2 import varmax
 tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 for i in range(11):

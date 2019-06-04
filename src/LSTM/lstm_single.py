@@ -4,7 +4,7 @@ from keras import optimizers
 import numpy as np
 import pandas as pd
 from pandas import read_csv
-from utils_branch2 import minutizer, preprocess_2
+from utils import minutizer, preprocess_2_single
 
 
 def lstm_model(stock: str,
@@ -14,10 +14,10 @@ def lstm_model(stock: str,
                learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
                ground_features: int = 5):
-    # Import data_branch2
-    data = preprocess_2(minutizer(read_csv('../data_branch2/sectors/Information-Technology/'+stock+'.csv', index_col='timestamp',
-                                           parse_dates=True), split=5), stock)
-    # Transform data_branch2
+    # Import data
+    data = preprocess_2_single(minutizer(read_csv('../data/sectors/Information-Technology/'+stock+'.csv',
+                                                  index_col='timestamp', parse_dates=True), split=5), stock)
+    # Transform data
     n, d = data.shape
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
     data = data.values
@@ -44,15 +44,15 @@ def lstm_model(stock: str,
     X_test = X[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
     y_test = Y[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
 
-    # Build the RNN_branch2
+    # Build the LSTM
     model = Sequential()
 
     # Adding layers. LSTM(units) --> Dropout(p)
     model.add(LSTM(units=ground_features, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=3, return_sequences=True, use_bias=False))
-    model.add(Dropout(dropout_rate))
+    #model.add(LSTM(units=3, return_sequences=True, use_bias=False))  # Could be removed
+    #model.add(Dropout(dropout_rate))
 
     model.add(LSTM(units=1, use_bias=False))
     model.add(Dropout(dropout_rate))
@@ -68,7 +68,7 @@ def lstm_model(stock: str,
     print(model.summary())
 
     # Fit
-    history = model.fit(X_train, y_train, epochs=epochs, validation_data=(X_val, y_val))
+    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
 
     # Validate
     predicted_stock_returns = model.predict(X_val)
@@ -82,7 +82,7 @@ def lstm_model(stock: str,
     pd.DataFrame(y_test).to_csv('../output/RNN_results/predictions/test_files/' + stock + '_test_real.csv', index=False)
 
 
-    print(history.history['loss'])
+    #print(history.history['loss'])
     predcted_returns = predicted_stock_returns.copy()
     actual_returns = y_val.copy()
     #

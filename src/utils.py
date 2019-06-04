@@ -7,13 +7,13 @@ def preprocess(data,
                incremental_data: bool = False,
                output_variable: str = 'binary',
                partitions: list = None):
-    """ Function takes in an input data_branch2 on the typical panda-form from fix_yahoo_finance or alpha vantage or
+    """ Function takes in an input data on the typical panda-form from fix_yahoo_finance or alpha vantage or
         any similar package. It then returns all the features as an X and the returns (binomial, multinomial or
         continuous) as a Y.
 
         X is an n-1 by 5 matrix with the features Open, High, Low, Close, Volume (in that particular order).
 
-        Note that the data_branch2 for X is on time unit i, whereas Y is on time unit i + 1.
+        Note that the data for X is on time unit i, whereas Y is on time unit i + 1.
 
         output_variable can also be any other word than "binary" or "multinomial",
         which would correspond to arithmetic returns.
@@ -72,7 +72,6 @@ def append_returns(stock, stock_name):
     return pd.concat([df, returns], axis = 1)
 
 
-
 def combine_ts_returns(path : str, tickers : list ):
     """A function that takes a list of tickers  and produces a table with columns indexed as:
             close, high, low, open volume and returns. So for example, if tickers = ['AAP', 'AES'], then
@@ -128,17 +127,17 @@ def y_numeric_to_vector(data, k):
 
 def combine_ts(tickers: list):
     stock0 = tickers[0]
-    path = '../data_branch2/sectors/Information-Technology/'+stock0+'.csv'
+    path = '../data/sectors/Information-Technology/'+stock0+'.csv'
     data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
     renamer = {'close': stock0+'_close', 'high': stock0+'_high', 'low': stock0+'_low',
                'open': stock0+'_open', 'volume': stock0+'_volume', }
     data = data.rename(columns=renamer)
     tickers.remove(tickers[0])
     for str in tickers:
-        path = '../data_branch2/sectors/Information-Technology/'+str+'.csv'
+        path = '../data/sectors/Information-Technology/'+str+'.csv'
         new_data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
         renamer = {'close': str+'_close', 'high': str+'_high', 'low': str+'_low',
-                   'open': str + '_open', 'volume': str+'_volume', }
+                   'open': str+'_open', 'volume': str+'_volume', }
         new_data = new_data.rename(columns=renamer)
 
         data = pd.concat([data, new_data], axis=1, sort=True)
@@ -166,7 +165,7 @@ def minutizer(data, split: int = 5, ground_features: int = 5):
     return new_data
 
 
-def preprocess_2(data, ticker, ground_features: int = 5, new_features: int = 5):
+def preprocess_2_single(data, ticker: str, ground_features: int = 5, new_features: int = 5):
     n, d = data.shape
     new_d = int(d/ground_features)
     new_data = np.zeros((n, new_d * new_features))
@@ -177,16 +176,38 @@ def preprocess_2(data, ticker, ground_features: int = 5, new_features: int = 5):
         new_data[:, new_features * i + 1] = \
             data.iloc[:, ground_features * i + 1] - data.iloc[:, ground_features * i + 2]  # Spread
         new_data[:, new_features * i + 2] = \
-            data.iloc[:, ground_features * i + 4] #- np.mean(data_branch2.iloc[:, ground_features * i + 4])# Volume
+            data.iloc[:, ground_features * i + 4]  # Volume
         new_data[:, new_features * i + 3] = \
-            data.iloc[:, ground_features * i + 3] #- np.mean(data_branch2.iloc[:, ground_features * i + 3])  # Open
-        # Laguerre polynomials
-        """
-        new_data[:, new_features * i + 3] = np.exp(- 0.5 * new_data[:, new_features * i + 3])
-        new_data[:, new_features * i + 4] = new_data[:, new_features * i + 4] * (1 - new_data[:, new_features * i + 3])
-        new_data[:, new_features * i + 5] = new_data[:, new_features * i + 4] * \
-            (1 - 2 * new_data[:, new_features * i + 3] + 0.5 * np.square(new_data[:, new_features * i + 3]))
-        """
+            data.iloc[:, ground_features * i + 3]  # Open price
+        new_data[:, new_features * i + 4] = \
+            np.sin(2 * np.pi * new_data[:, new_features * i + 3]/np.max(new_data[:, new_features * i + 3]))  # Sin
+
+        open_prices[:, i] = data.iloc[:, ground_features * i + 3]
+    header_data = []
+    header_open = []
+    header_data.append(ticker + '_returns')
+    header_data.append(ticker + '_spread')
+    header_data.append(ticker + '_volume')  # Normalized
+    header_data.append(ticker + '_normalized_open')
+    header_data.append(ticker + '_sin_returns')
+    header_open.append(ticker + '_open')
+    return pd.DataFrame(new_data, columns=header_data), pd.DataFrame(open_prices, columns=header_open)
+
+
+def preprocess_2_multi(data, tickers: list, ground_features: int = 5, new_features: int = 5):
+    n, d = data.shape
+    new_d = int(d/ground_features)
+    new_data = np.zeros((n, new_d * new_features))
+    open_prices = np.zeros((n, new_d))
+    for i in range(new_d):
+        new_data[:, new_features * i] = \
+            data.iloc[:, ground_features * i]/data.iloc[:, ground_features * i + 3] - 1  # Returns
+        new_data[:, new_features * i + 1] = \
+            data.iloc[:, ground_features * i + 1] - data.iloc[:, ground_features * i + 2]  # Spread
+        new_data[:, new_features * i + 2] = \
+            data.iloc[:, ground_features * i + 4] #- np.mean(data.iloc[:, ground_features * i + 4])# Volume
+        new_data[:, new_features * i + 3] = \
+            data.iloc[:, ground_features * i + 3] #- np.mean(data.iloc[:, ground_features * i + 3])  # Open
         new_data[:, new_features * i + 4] = \
             np.sin(2 * np.pi * new_data[:, new_features * i + 3]/np.max(new_data[:, new_features * i + 3]))  # Sin
 
@@ -201,6 +222,7 @@ def preprocess_2(data, ticker, ground_features: int = 5, new_features: int = 5):
         header_data.append(ticker + '_sin_returns')
         header_open.append(ticker + '_open')
     return pd.DataFrame(new_data, columns=header_data), pd.DataFrame(open_prices, columns=header_open)
+
 
 def combine_ts_with_path(base_path, tickers: list):
     stock0 = tickers[0]
@@ -221,10 +243,3 @@ def combine_ts_with_path(base_path, tickers: list):
         data = pd.concat([data, new_data], axis=1, sort=True)
     tickers.insert(0, stock0)
     return data.interpolate()[1:data.shape[0]]
-    #for ticker in tickers:
-    header_data.append(ticker + '_returns')  # 0
-    header_data.append(ticker + '_spread')  # 1
-    header_data.append(ticker + '_volume')  # 2
-    header_data.append(ticker + '_open')  # 3
-    header_data.append(ticker + '_sin_open')  # 8
-    return pd.DataFrame(new_data, columns=header_data)

@@ -1,5 +1,5 @@
 from statsmodels.tsa.statespace.varmax import VARMAX
-from utils_branch2 import minutizer, preprocess_2
+from utils import minutizer, preprocess_2
 import pandas as pd
 from pandas import read_csv
 from numpy import subtract
@@ -10,17 +10,17 @@ from numpy import subtract
 def varmax(ticker: str,
            p: int = 2,
            q: int = 0):
-    data = preprocess_2(minutizer(read_csv('../data_branch2/Health-Care/' + ticker + '.csv', index_col='timestamp',
+    data = preprocess_2(minutizer(read_csv('../data/Health-Care/' + ticker + '.csv', index_col='timestamp',
                                            parse_dates=True), split=5), ticker)
     n, d = data.shape
 
-    # Split data_branch2
+    # Split data
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
     train_data = data[0: int(n*train_val_test_split['train'])]
     val_data = data[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
     test_data = data[int(n*train_val_test_split['val']): int(n*train_val_test_split['test'])]
 
-    # split data_branch2 in X and Y
+    # split data in X and Y
     y_list = [ticker+'_returns']
 
     # Train
@@ -47,11 +47,11 @@ def varmax(ticker: str,
     predictions_test = model_fit.forecast(steps=exog_x_test.shape[0], exog=exog_x_test.values)
 
     # Save
-    pd.DataFrame(predictions_val).to_csv('../output/ARIMA_results/predictions/val_files/'+ticker+'_val_predictions.csv',
+    pd.DataFrame(predictions_val).to_csv('../output/VARMAX_results/predictions/val_files/'+ticker+'_val_predictions.csv',
                                          index=False)
-    pd.DataFrame(endog_y_val).to_csv('../output/ARIMA_results/predictions/val_files/'+ticker+'_val_real.csv',
+    pd.DataFrame(endog_y_val).to_csv('../output/VARMAX_results/predictions/val_files/'+ticker+'_val_real.csv',
                                      index=False)
-    pd.DataFrame(predictions_test).to_csv('../output/ARIMA_results/predictions/test_files/'+ticker+'_test_predictions.csv',
+    pd.DataFrame(predictions_test).to_csv('../output/VARMAX_results/predictions/test_files/'+ticker+'_test_predictions.csv',
                                           index=False)
-    pd.DataFrame(endog_y_test).to_csv('../output/ARIMA_results/predictions/test_files/'+ticker+'_test_real.csv',
+    pd.DataFrame(endog_y_test).to_csv('../output/VARMAX_results/predictions/test_files/'+ticker+'_test_real.csv',
                                       index=False)
