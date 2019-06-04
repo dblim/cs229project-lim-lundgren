@@ -121,7 +121,7 @@ def varmax(tickers,
         for j in range(endog_y_val.shape[1]):
             MSE += (endog_y_val.values[i, j] - float(predictions_val[i][j]))**2
     print('p:', p, ' MSE:', MSE)
-
+    '''
     # Test -- this is just here for simplcity!!
     predictions_test = model_fit.forecast(steps=exog_x_test.shape[0], exog=exog_x_test.values)
 
@@ -138,7 +138,7 @@ def varmax(tickers,
                                        index=False)
         pd.DataFrame(pred_test).to_csv('../output/ARIMA_results/predictions/test_files/' + ticker + '_test_real.csv',
                                        index=False)
-
+    '''
     # Evaluate
     pic: bool = False
     if pic is True:
