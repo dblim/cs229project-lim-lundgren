@@ -7,6 +7,7 @@ from statsmodels.tsa.api import VAR
 """In this script, we will get the training residuals for VAR. These will then be trained on using RNN/LSTM"""
 
 justin_data : bool=True
+
 # data
 if justin_data is True:
     path = '../data/sectors/Information Technology/'
@@ -63,23 +64,9 @@ def optimal_p(endog_y,max_p):
     return min(MSE_dictionary, key=MSE_dictionary.get)
 
 # Try max_p = 50, maximum hyperparameter to search
-max_p = 50
+max_p = 10
 print(optimal_p(endog_y,max_p))
 
 # We get an optimal hyperparameter of p=1
 
-# This function is only needed if we want to call training residuals from the VAR model for a particular p
-
-def get_training_residual(data,tickers , p):
-    """Given data, this function returns a pandas dataframe on the TRAINING residuals
-        from a VAR model of order p. More precisely, suppose that we have training data
-        of length m, e.g. in the above m = 0.8*n. We number our data points from earliest time
-        to latest as 0, 1, .... , m-1. Then the function returns the residuals on time
-        p-1, p, ...., m-1 (so the residual has m-p data points)."""
-    VAR_model = VAR(data)
-    results = VAR_model.fit(p)
-    residuals = results.resid
-    # Rename columns as residuals
-    residuals.columns = [ticker + "_residuals" for ticker in tickers]
-    return residuals
 
