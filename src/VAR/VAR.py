@@ -64,8 +64,15 @@ def optimal_p(endog_y,max_p):
     return min(MSE_dictionary, key=MSE_dictionary.get)
 
 # Try max_p = 50, maximum hyperparameter to search
-max_p = 10
-print(optimal_p(endog_y,max_p))
+#max_p = 10
+#print(optimal_p(endog_y,max_p))
+
+# AIC selection
+for p in range(1,100):
+    p += 1
+    model =  VAR(endog_y).fit(p)
+    print( model.aic)
+
 
 # We get an optimal hyperparameter of p=1
 
