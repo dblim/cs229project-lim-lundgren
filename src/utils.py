@@ -127,14 +127,14 @@ def y_numeric_to_vector(data, k):
 
 def combine_ts(tickers: list):
     stock0 = tickers[0]
-    path = '../data/sectors/Information-Technology/'+stock0+'.csv'
+    path = '../data/sectors/Information Technology/'+stock0+'.csv'
     data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
     renamer = {'close': stock0+'_close', 'high': stock0+'_high', 'low': stock0+'_low',
                'open': stock0+'_open', 'volume': stock0+'_volume', }
     data = data.rename(columns=renamer)
     tickers.remove(tickers[0])
     for str in tickers:
-        path = '../data/sectors/Information-Technology/'+str+'.csv'
+        path = '../data/sectors/Information Technology/'+str+'.csv'
         new_data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
         renamer = {'close': str+'_close', 'high': str+'_high', 'low': str+'_low',
                    'open': str+'_open', 'volume': str+'_volume', }
