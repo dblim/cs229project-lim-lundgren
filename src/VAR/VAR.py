@@ -1,6 +1,9 @@
+import sys
+sys.path.append('../')
 from utils import combine_ts_returns
 import pandas as pd
 import numpy as np
+
 import matplotlib.pyplot as plt
 from statsmodels.tsa.api import VAR
 
@@ -68,7 +71,7 @@ def optimal_p(endog_y,max_p):
 #print(optimal_p(endog_y,max_p))
 
 # AIC selection
-for p in range(1,100):
+for p in range(1,10):
     p += 1
     model =  VAR(endog_y).fit(p)
     print( model.aic)
