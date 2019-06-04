@@ -180,6 +180,5 @@ def varmax(tickers,
             plt.close()
 
 
-for i in range(11):
-    p = (i + 1) * 2
-    varmax(tickers, p=p)
+for i in range(75):
+    varmax(tickers, p=1, q=i)
