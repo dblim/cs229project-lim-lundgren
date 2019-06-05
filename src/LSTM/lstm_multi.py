@@ -131,5 +131,5 @@ def lstm_model(stocks: list,
         print('Strategy Sharpe Ration:', np.mean(obvious_strategy) / np.std(obvious_strategy))
         print('Correlation:', np.corrcoef(predcted_returns.T, actual_returns.T)[0][1])
 
-tickers = ['ACN', 'AMAT']#, 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 lstm_model(tickers)
