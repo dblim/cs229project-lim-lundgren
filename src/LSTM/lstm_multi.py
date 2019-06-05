@@ -1,6 +1,7 @@
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
-from keras import optimizers
+import keras.backend as K
+from keras import optimizers, losses
 import numpy as np
 import pandas as pd
 #from utils import minutizer, combine_ts, preprocess_2_multi
@@ -76,11 +77,19 @@ def combine_ts(tickers: list):
     return data.interpolate()[1:data.shape[0]]
 
 
+def customized_loss(y_pred, y_true):
+    y_pred_sign = K.division(y_pred, K.abs(y_pred))
+    y_true_sign = K.division(y_true, K.abs(y_true))
+    den = K.sum(y_pred_sign == y_true_sign, axis=-1)
+    num = K.sum(K.square(y_pred - y_true), axis=-1)
+    return num/den
+
+
 def lstm_model(stocks: list,
                lookback: int = 24,
                epochs: int = 100,
                batch_size: int = 96,
-               learning_rate: float = 0.0001,
+               learning_rate: float = 0.0002,
                dropout_rate: float = 0.1,
                ground_features: int = 5,
                percentile: int = 10):
@@ -117,7 +126,6 @@ def lstm_model(stocks: list,
     model.add(LSTM(units=d, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
     model.add(Dropout(dropout_rate))
 
-
     model.add(LSTM(units=int(d/ground_features), use_bias=False))
     model.add(Dropout(dropout_rate))
 
@@ -128,7 +136,7 @@ def lstm_model(stocks: list,
     adam_opt = optimizers.adam(lr=learning_rate)
 
     # Compile
-    model.compile(optimizer=adam_opt, loss='mean_squared_error')
+    model.compile(optimizer=adam_opt, loss=losses.KLD)
 
     print(model.summary())
 
@@ -190,5 +198,5 @@ def lstm_model(stocks: list,
         print('Strategy Sharpe Ration:', np.mean(obvious_strategy) / np.std(obvious_strategy))
         print('Correlation:', np.corrcoef(predcted_returns.T, actual_returns.T)[0][1])
 
-tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT']#, 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 lstm_model(tickers)
