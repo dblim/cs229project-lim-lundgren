@@ -1,5 +1,7 @@
 import pandas as pd
 
+# Appends returns column to dataframe
+
 def append_returns(stock, stock_name):
     df = stock.dropna() # remove nans
     returns = stock['close'] - stock['open']
