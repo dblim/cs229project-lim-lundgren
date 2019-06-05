@@ -11,11 +11,11 @@ def lstm_model(stock: str,
                lookback: int = 24,
                epochs: int = 100,
                batch_size: int = 96,
-               learning_rate: float = 0.0001,
+               learning_rate: float = 0.0002,
                dropout_rate: float = 0.1,
                ground_features: int = 5):
     # Import data
-    data = preprocess_2_single(minutizer(read_csv('../data/sectors/Information-Technology/'+stock+'.csv',
+    data = preprocess_2_single(minutizer(read_csv('../data/sectors/Information Technology/'+stock+'.csv',
                                                   index_col='timestamp', parse_dates=True), split=5), stock)
     # Transform data
     n, d = data.shape
@@ -74,12 +74,12 @@ def lstm_model(stock: str,
     predicted_stock_returns = model.predict(X_val)
 
     # Save predictions on test and validation set
-    pd.DataFrame(predicted_stock_returns).to_csv('../output/RNN_results/predictions/val_files/'+stock+
+    pd.DataFrame(predicted_stock_returns).to_csv('../output/LSTM_results/single_valid/'+stock+
                                                  '_val_predictions.csv', index=False)
-    pd.DataFrame(y_val).to_csv('../output/RNN_results/predictions/val_files/'+stock+'_val_real.csv', index=False)
-    pd.DataFrame(model.predict(X_test)).to_csv('../output/RNN_results/predictions/test_files/' + stock +
+    pd.DataFrame(y_val).to_csv('../output/LSTM_results/single_valid/'+stock+'_val_real.csv', index=False)
+    pd.DataFrame(model.predict(X_test)).to_csv('../output/LSTM_results/single_test/' + stock +
                                                '_test_predictions.csv', index=False)
-    pd.DataFrame(y_test).to_csv('../output/RNN_results/predictions/test_files/' + stock + '_test_real.csv', index=False)
+    pd.DataFrame(y_test).to_csv('../output/LSTM_results/single_test/' + stock + '_test_real.csv', index=False)
 
 
     #print(history.history['loss'])
@@ -128,3 +128,7 @@ def lstm_model(stock: str,
     print('Strategy Sharpe Ration:', np.mean(obvious_strategy) / np.std(obvious_strategy))
     print('Return Correlation:', np.corrcoef(predicted_stock_returns.T, y_val.T)[0][1])
 
+
+tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+for ticker in tickers:
+    lstm_model(ticker)
