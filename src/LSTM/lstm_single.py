@@ -4,7 +4,7 @@ from keras import optimizers
 import numpy as np
 import pandas as pd
 from pandas import read_csv
-from utils import minutizer, preprocess_2_single
+from lstm_utils import minutizer, preprocess_2_single
 
 
 def lstm_model(stock: str,
