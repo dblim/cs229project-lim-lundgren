@@ -1,4 +1,4 @@
-from util.utils_var import combine_ts_returns
+from var_utils import combine_ts_returns
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -66,8 +66,10 @@ def optimal_p(endog_y,max_p):
 
 # Try max_p = 10, maximum hyperparameter to search
 
-def hyperparameter_search(endog, y, max_p):
+def hyperparameter_search(endog_y, max_p):
     return(optimal_p(endog_y,max_p))
+
+print(hyperparameter_search(endog_y,10))
 
 # AIC selection
 #for p in range(1,10):
