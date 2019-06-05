@@ -15,7 +15,7 @@ def lstm_model(stock: str,
                dropout_rate: float = 0.1,
                ground_features: int = 5):
     # Import data
-    data = preprocess_2_single(minutizer(read_csv('../data/sectors/Information Technology/'+stock+'.csv',
+    data, _ = preprocess_2_single(minutizer(read_csv('../data/sectors/Information Technology/'+stock+'.csv',
                                                   index_col='timestamp', parse_dates=True), split=5), stock)
     # Transform data
     n, d = data.shape
@@ -129,6 +129,6 @@ def lstm_model(stock: str,
     print('Return Correlation:', np.corrcoef(predicted_stock_returns.T, y_val.T)[0][1])
 
 
-tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN' ,'AMAT' , 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 for ticker in tickers:
     lstm_model(ticker)
