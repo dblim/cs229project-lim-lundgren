@@ -14,6 +14,7 @@ def customized_loss(y_pred, y_true):
     logicals = K.equal(y_true_sign, y_pred_sign)
     logicals_0_1 = K.cast(logicals, 'float32')
     den = K.sum(logicals_0_1, axis=-1)
+    den = den + 0.01
     return num/den
 
 
