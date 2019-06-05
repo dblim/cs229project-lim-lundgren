@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 #from utils import minutizer, combine_ts, preprocess_2_multi
 
-
 def preprocess_2_multi(data, tickers: list, ground_features: int = 5, new_features: int = 5):
     n, d = data.shape
     new_d = int(d/ground_features)
@@ -78,11 +77,14 @@ def combine_ts(tickers: list):
 
 
 def customized_loss(y_pred, y_true):
-    y_pred_sign = K.division(y_pred, K.abs(y_pred))
-    y_true_sign = K.division(y_true, K.abs(y_true))
-    den = K.sum(y_pred_sign == y_true_sign, axis=-1)
     num = K.sum(K.square(y_pred - y_true), axis=-1)
+    y_true_sign = y_true > 0
+    y_pred_sign = y_pred > 0
+    logicals = K.equal(y_true_sign, y_pred_sign)
+    logicals_0_1 = K.cast(logicals, 'float32')
+    den = K.sum(logicals_0_1, axis=-1)
     return num/den
+
 
 
 def lstm_model(stocks: list,
@@ -136,7 +138,7 @@ def lstm_model(stocks: list,
     adam_opt = optimizers.adam(lr=learning_rate)
 
     # Compile
-    model.compile(optimizer=adam_opt, loss=losses.KLD)
+    model.compile(optimizer=adam_opt, loss=customized_loss)
 
     print(model.summary())
 
