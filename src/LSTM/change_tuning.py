@@ -94,6 +94,7 @@ def lstm_model_mse(lstm_units :list, batch_size : list, stocks: list,
                     actual_returns[j] = y_val[amount_of_stocks * j + i]
                 #
                 MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
+                print(MSE.shape)
             print('MSE:', MSE)
             print('Number of LSTM cells:', units_num)
             print('Batch size:', batch_num)
@@ -102,13 +103,13 @@ def lstm_model_mse(lstm_units :list, batch_size : list, stocks: list,
 # Search for lstm_units
 
 # 10 numbers sampled  randomly between 100 and 800
-lstm_range = [i for i in range(10,100)]
+lstm_range = [i for i in range(10,50)]
 lstm_units = random.sample(lstm_range, 5)
 
 # Search for batch size. Original chose was 96
 # 10 numbers sampled  randomly between 50 and 100
 
-batch_size_range = [i for i in range(50,150)]
+batch_size_range = [i for i in range(90,100)]
 batch_size = random.sample(batch_size_range, 5)
 
 tickers = ['ACN', 'AMAT'] # 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
