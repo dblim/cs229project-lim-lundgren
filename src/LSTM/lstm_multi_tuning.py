@@ -4,6 +4,7 @@ import keras.backend as K
 from keras import optimizers, losses
 import numpy as np
 import pandas as pd
+import random
 from lstm_utils import minutizer, combine_ts, preprocess_2_multi
 
 
@@ -19,14 +20,15 @@ def customized_loss(y_pred, y_true):
 
 
 
-def lstm_model(stocks: list,
+def lstm_model_mse(stocks: list,
                lookback: int = 24,
                epochs: int = 100,
                batch_size: int = 96,
                learning_rate: float = 0.0002,
                dropout_rate: float = 0.1,
                ground_features: int = 5,
-               percentile: int = 10):
+               percentile: int = 10,
+               lstm_units : int):
     # Import data
     data = combine_ts(stocks)
     data = minutizer(data, split=5)
@@ -57,14 +59,14 @@ def lstm_model(stocks: list,
     model = Sequential()
 
     # Adding layers. LSTM(n) --> Dropout(p)
-    model.add(LSTM(units=d, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
+    model.add(LSTM(units=lstm_units, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=int(d/ground_features), use_bias=False))
+    model.add(LSTM(units=int(lstm_units/ground_features), use_bias=False))
     model.add(Dropout(dropout_rate))
 
     # Output layer
-    model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
+    model.add(Dense(units=int(lstm_units/ground_features), activation='linear', use_bias=True))
 
     # Optimizer
     adam_opt = optimizers.adam(lr=learning_rate)
@@ -91,46 +93,15 @@ def lstm_model(stocks: list,
         actual_returns = y_val[:, i].copy()
         #
         MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
-        dummy_mse = sum(actual_returns**2)/(y_val.shape[0])
-        print('=========', ticker, '=========')
-        print('Dummy MSE:', dummy_mse)
-        print('MSE:', MSE)
-        print('--')
-        pred_zero_one = predicted_stock_returns[:, i]
-        pred_zero_one[pred_zero_one > 0] = 1
-        pred_zero_one[pred_zero_one < 0] = 0
-        print('Predicted ones:', np.mean(pred_zero_one))
-        real_zero_one = y_val[:, i]
-        real_zero_one[real_zero_one > 0] = 1
-        real_zero_one[real_zero_one < 0] = 0
-        print('Real ones:', np.mean(real_zero_one))
-        TP = np.sum(np.logical_and(pred_zero_one == 1, real_zero_one == 1))
-        TN = np.sum(np.logical_and(pred_zero_one == 0, real_zero_one == 0))
-        FP = np.sum(np.logical_and(pred_zero_one == 1, real_zero_one == 0))
-        FN = np.sum(np.logical_and(pred_zero_one == 0, real_zero_one == 1))
-        print('True positive:', TP)
-        print('True Negative:', TN)
-        print('False positive:', FP)
-        print('False Negative:', FN)
-        print('Dummy guess true rate:', max(np.mean(real_zero_one), 1 - np.mean(real_zero_one)))
-        accuracy = (TP + TN)/(TP + TN + FP + FN)
-        print('Accuracy:', max(accuracy, 1 - accuracy))
-        print('--')
-        dummy_return = 1
-        strategy_return = 1
-        threshold = np.percentile(predcted_returns, percentile)
-        obvious_strategy = actual_returns[predcted_returns > threshold]
-        for j in range(pred_zero_one.shape[0]):
-            dummy_return *= (1 + actual_returns[j])
-            if predcted_returns[j] > threshold:
-                strategy_return *= (1 + actual_returns[j])
-        print('Dummy return:', (dummy_return - 1) * 100)
-        print('Dummy standard deviation: ', np.std(actual_returns))
-        print('Dummy Sharpe Ration:', np.mean(actual_returns)/np.std(actual_returns))
-        print('Strategy return:', (strategy_return - 1) * 100)
-        print('Strategy standard deviation: ', np.std(obvious_strategy))
-        print('Strategy Sharpe Ration:', np.mean(obvious_strategy) / np.std(obvious_strategy))
-        print('Correlation:', np.corrcoef(predcted_returns.T, actual_returns.T)[0][1])
+    return MSE
 
 tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
-lstm_model(tickers)
+
+# Search for lstm_units
+
+# 10 numbers sampled  randomly between 100 and 800
+lstm_range = [i for i in range(100,800)]
+lstm_units = random.sample(lstm_range, 10)
+
+for num in lstm_units:
+    print(lstm_model_mse(tickers, num))
