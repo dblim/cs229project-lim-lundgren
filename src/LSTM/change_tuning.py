@@ -20,7 +20,7 @@ def customized_loss(y_pred, y_true):
 
 def lstm_model_mse(lstm_units :list, batch_size : list, stocks: list,
                lookback: int = 24,
-               epochs: int = 1,
+               epochs: int = 100,
                learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
                ground_features: int = 4,
@@ -80,8 +80,6 @@ def lstm_model_mse(lstm_units :list, batch_size : list, stocks: list,
             # Compile
             model.compile(optimizer=adam_opt, loss=customized_loss)
 
-            print(model.summary())
-
             # Fit
             history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_num, validation_data=(X_val, y_val))
 
@@ -113,6 +111,6 @@ lstm_units = random.sample(lstm_range, 5)
 batch_size_range = [i for i in range(50,150)]
 batch_size = random.sample(batch_size_range, 5)
 
-tickers = ['ACN', 'AMAT'] # 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT',  'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 lstm_model_mse(lstm_units, batch_size,tickers)
