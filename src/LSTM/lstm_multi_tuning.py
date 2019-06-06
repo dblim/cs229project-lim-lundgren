@@ -19,11 +19,10 @@ def customized_loss(y_pred, y_true):
     return num/den
 
 
-
 def lstm_model_mse(stocks: list,
                lookback: int = 24,
                epochs: int = 100,
-               batch_size: int = 96,
+               batch_size: int,
                learning_rate: float = 0.0002,
                dropout_rate: float = 0.1,
                ground_features: int = 5,
@@ -103,5 +102,16 @@ tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', '
 lstm_range = [i for i in range(100,800)]
 lstm_units = random.sample(lstm_range, 10)
 
-for num in lstm_units:
-    print(lstm_model_mse(tickers, num))
+# Search for batch size. Original chose was 96
+# 10 numbers sampled  randomly between 50 and 100
+
+batch_size_range = [i for i in range(50,100)]
+batch_size = random.sample(batch_size_range, 10)
+
+
+
+for units_num in lstm_units:
+    for batch_num in batch_size:
+        print('MSE:', lstm_model_mse(tickers, num) )
+        print('Number of lstm cells:', units_num)
+        print('Batch size:', batch_num)
