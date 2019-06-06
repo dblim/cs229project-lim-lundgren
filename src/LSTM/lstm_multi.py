@@ -202,5 +202,5 @@ def lstm_model(stocks: list,
         print('Correlation:', np.corrcoef(predcted_returns.T, actual_returns.T)[0][1])
 
 
-tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT'] # 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 lstm_model(tickers)

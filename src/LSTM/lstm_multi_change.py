@@ -1,7 +1,7 @@
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
 import keras.backend as K
-from keras import optimizers, losses
+from keras import optimizers
 import numpy as np
 import pandas as pd
 
@@ -89,9 +89,9 @@ def customized_loss(y_pred, y_true):
 
 def lstm_model(stocks: list,
                lookback: int = 24,
-               epochs: int = 100,
+               epochs: int = 1,
                batch_size: int = 96,
-               learning_rate: float = 0.0002,
+               learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
                ground_features: int = 4,
                percentile: int = 10):
@@ -107,47 +107,38 @@ def lstm_model(stocks: list,
 
     new_n = (n - lookback) * amount_of_stocks
 
-    X_train = np.zeros((int(new_n * train_val_test_split['train']), lookback, ground_features))
-    Y_train = np.zeros((int(new_n * train_val_test_split['train']), 1))
+    X = np.zeros((new_n, lookback, ground_features))
+    Y = np.zeros((new_n, 1))
 
-    X_val = np.zeros((int(new_n * (train_val_test_split['val'] - train_val_test_split['train'])),
-                      lookback, ground_features))
-    Y_val = np.zeros((int(new_n * (train_val_test_split['val'] - train_val_test_split['train'])), 1))
+    for i in range(n - lookback):
+        for j in range(amount_of_stocks):
+            idx = i * amount_of_stocks + j
+            for k in range(ground_features):
+                col = j * ground_features + k
+                X[idx, :, k] = data.iloc[i: (i + lookback), col]
+            Y[idx] = data.iloc[i, ground_features * j]
 
-    X_val = np.zeros((int(new_n * (train_val_test_split['test'] - train_val_test_split['val'])),
-                      lookback, ground_features))
-    Y_val = np.zeros((int(new_n * (train_val_test_split['test'] - train_val_test_split['val'])), 1))
+    X_train = X[0: int(new_n * train_val_test_split['train'])]
+    y_train = Y[0: int(new_n * train_val_test_split['train'])]
 
-    for i in range(amount_of_stocks):
-        Y[i] = None
+    X_val = X[int(new_n * train_val_test_split['train']): int(new_n * train_val_test_split['val'])]
+    y_val = Y[int(new_n * train_val_test_split['train']): int(new_n * train_val_test_split['val'])]
 
-    for i in range(X.shape[0]):
-        for j in range(d):
-            X[i, :, j] = data.iloc[i:(i+lookback), j]
-            if j < int(d/ground_features):
-                Y[i, j] = data.iloc[lookback + i, j * ground_features]
-
-    X_train = X[0: int(n * train_val_test_split['train'])]
-    y_train = Y[0: int(n * train_val_test_split['train'])]
-
-    X_val = X[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
-    y_val = Y[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
-
-    X_test = X[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
-    y_test = Y[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
+    X_test = X[int(new_n * train_val_test_split['val']): int(new_n * train_val_test_split['test'])]
+    y_test = Y[int(new_n * train_val_test_split['val']): int(new_n * train_val_test_split['test'])]
 
     # Initialising the LSTM
     model = Sequential()
 
     # Adding layers. LSTM(n) --> Dropout(p)
-    model.add(LSTM(units=d, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
+    model.add(LSTM(units=20, return_sequences=True, use_bias=True, input_shape=(lookback, ground_features)))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=int(d/ground_features), use_bias=False))
+    model.add(LSTM(units=10, use_bias=False))
     model.add(Dropout(dropout_rate))
 
     # Output layer
-    model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
+    model.add(Dense(units=1, activation='linear', use_bias=True))
 
     # Optimizer
     adam_opt = optimizers.adam(lr=learning_rate)
@@ -170,8 +161,11 @@ def lstm_model(stocks: list,
     pd.DataFrame(y_test).to_csv('../output/LSTM_results/test_results/all_stocks_real.csv', index=False)
 
     for i, ticker in enumerate(stocks):
-        predcted_returns = predicted_stock_returns[:, i].copy()
-        actual_returns = y_val[:, i].copy()
+        predcted_returns = np.zeros((y_val.shape[0], 1))
+        actual_returns = np.zeros((y_val.shape[0], 1))
+        for j in range(int(y_val.shape[0]/amount_of_stocks)):
+            predcted_returns[j] = predicted_stock_returns[amount_of_stocks * j + i]
+            actual_returns[j] = y_val[amount_of_stocks * j + i]
         #
         MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
         dummy_mse = sum(actual_returns**2)/(y_val.shape[0])
@@ -179,11 +173,11 @@ def lstm_model(stocks: list,
         print('Dummy MSE:', dummy_mse)
         print('MSE:', MSE)
         print('--')
-        pred_zero_one = predicted_stock_returns[:, i]
+        pred_zero_one = predcted_returns.copy()
         pred_zero_one[pred_zero_one > 0] = 1
         pred_zero_one[pred_zero_one < 0] = 0
         print('Predicted ones:', np.mean(pred_zero_one))
-        real_zero_one = y_val[:, i]
+        real_zero_one = actual_returns.copy()
         real_zero_one[real_zero_one > 0] = 1
         real_zero_one[real_zero_one < 0] = 0
         print('Real ones:', np.mean(real_zero_one))
