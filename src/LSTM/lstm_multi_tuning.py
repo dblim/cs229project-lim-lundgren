@@ -19,7 +19,7 @@ def customized_loss(y_pred, y_true):
     return num/den
 
 
-def lstm_model_mse(lstm_units : int, batch_size: int, stocks: list,
+def lstm_model_mse(lstm_units : list, batch_size: list, stocks: list,
                lookback: int = 24,
                epochs: int = 100,
                learning_rate: float = 0.0002,
@@ -52,47 +52,47 @@ def lstm_model_mse(lstm_units : int, batch_size: int, stocks: list,
     X_test = X[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
     y_test = Y[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
 
-    # Initialising the LSTM
-    model = Sequential()
+    #Hyperparameter printing
+    for units_num in lstm_units:
+        for batch_num in batch_size:
 
-    # Adding layers. LSTM(n) --> Dropout(p)
-    model.add(LSTM(units=lstm_units, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
-    model.add(Dropout(dropout_rate))
+            # Initialising the LSTM
+            model = Sequential()
 
-    model.add(LSTM(units=int(lstm_units/ground_features), use_bias=False))
-    model.add(Dropout(dropout_rate))
+            # Adding layers. LSTM(n) --> Dropout(p)
+            model.add(LSTM(units=units_num, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
+            model.add(Dropout(dropout_rate))
 
-    # Output layer
-    model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
+            model.add(LSTM(units=int(units_num/ground_features), use_bias=False))
+            model.add(Dropout(dropout_rate))
 
-    # Optimizer
-    adam_opt = optimizers.adam(lr=learning_rate)
+            # Output layer
+            model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
 
-    # Compile
-    model.compile(optimizer=adam_opt, loss=customized_loss)
+            # Optimizer
+            adam_opt = optimizers.adam(lr=learning_rate)
 
-    print(model.summary())
+            # Compile
+            model.compile(optimizer=adam_opt, loss=customized_loss)
 
-    # Fit
-    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+            print(model.summary())
 
-    # Validate
-    predicted_stock_returns = model.predict(X_val)
+            # Fit
+            history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_num, validation_data=(X_val, y_val))
 
-    # Save
-    #pd.DataFrame(predicted_stock_returns).to_csv('../output/LSTM_results/valid_results/all_stocks_pred.csv', index=False)
-    #pd.DataFrame(y_val).to_csv('../output/LSTM_results/valid_results/all_stocks_real.csv', index=False)
-    #pd.DataFrame(model.predict(X_test)).to_csv('../output/LSTM_results/test_results/all_stocks_pred.csv', index=False)
-    #pd.DataFrame(y_test).to_csv('../output/LSTM_results/test_results/all_stocks_real.csv', index=False)
+            # Validate
+            predicted_stock_returns = model.predict(X_val)
 
-    for i, ticker in enumerate(stocks):
-        predcted_returns = predicted_stock_returns[:, i].copy()
-        actual_returns = y_val[:, i].copy()
-        #
-        MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
-    return MSE
+            for i, ticker in enumerate(stocks):
+                predcted_returns = predicted_stock_returns[:, i].copy()
+                actual_returns = y_val[:, i].copy()
+                #
+                MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
+                print('MSE:', MSE)
+                print('Number of LSTM cells:', units_num)
+                print('Batch size:', batch_num)
 
-tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+
 
 # Search for lstm_units
 
@@ -106,16 +106,6 @@ lstm_units = random.sample(lstm_range, 5)
 batch_size_range = [i for i in range(50,150)]
 batch_size = random.sample(batch_size_range, 5)
 
-for units_num in lstm_units:
-    for batch_num in batch_size:
-        print('MSE:', lstm_model_mse(units_num, batch_num, tickers) )
-        print('Number of LSTM cells:', units_num)
-        print('Batch size:', batch_num)
+tickers = ['ACN', 'AMAT',  'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
-#stocks = tickers
-#data = combine_ts(stocks)
-#data = minutizer(data, split=5)
-#data, _ = preprocess_2_multi(data, stocks)
-
-#print(data.shape[1])
-#Data shape is 50
+lstm_model_mse(lstm_units, batch_size,tickers)
