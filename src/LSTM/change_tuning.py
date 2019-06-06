@@ -102,7 +102,7 @@ def lstm_model_mse(lstm_units :list, batch_size : list, stocks: list,
 # Search for lstm_units
 
 # 10 numbers sampled  randomly between 100 and 800
-lstm_range = [i for i in range(10,150)]
+lstm_range = [i for i in range(10,100)]
 lstm_units = random.sample(lstm_range, 5)
 
 # Search for batch size. Original chose was 96
@@ -111,6 +111,6 @@ lstm_units = random.sample(lstm_range, 5)
 batch_size_range = [i for i in range(50,150)]
 batch_size = random.sample(batch_size_range, 5)
 
-tickers = ['ACN', 'AMAT',  'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT'] # 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 lstm_model_mse(lstm_units, batch_size,tickers)
