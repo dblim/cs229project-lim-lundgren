@@ -80,10 +80,10 @@ def lstm_model_mse(lstm_units : int, batch_size: int, stocks: list,
     predicted_stock_returns = model.predict(X_val)
 
     # Save
-    pd.DataFrame(predicted_stock_returns).to_csv('../output/LSTM_results/valid_results/all_stocks_pred.csv', index=False)
-    pd.DataFrame(y_val).to_csv('../output/LSTM_results/valid_results/all_stocks_real.csv', index=False)
-    pd.DataFrame(model.predict(X_test)).to_csv('../output/LSTM_results/test_results/all_stocks_pred.csv', index=False)
-    pd.DataFrame(y_test).to_csv('../output/LSTM_results/test_results/all_stocks_real.csv', index=False)
+    #pd.DataFrame(predicted_stock_returns).to_csv('../output/LSTM_results/valid_results/all_stocks_pred.csv', index=False)
+    #pd.DataFrame(y_val).to_csv('../output/LSTM_results/valid_results/all_stocks_real.csv', index=False)
+    #pd.DataFrame(model.predict(X_test)).to_csv('../output/LSTM_results/test_results/all_stocks_pred.csv', index=False)
+    #pd.DataFrame(y_test).to_csv('../output/LSTM_results/test_results/all_stocks_real.csv', index=False)
 
     for i, ticker in enumerate(stocks):
         predcted_returns = predicted_stock_returns[:, i].copy()
@@ -97,13 +97,13 @@ tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', '
 # Search for lstm_units
 
 # 10 numbers sampled  randomly between 100 and 800
-lstm_range = [i for i in range(100,800)]
+lstm_range = [i for i in range(10,150)]
 lstm_units = random.sample(lstm_range, 5)
 
 # Search for batch size. Original chose was 96
 # 10 numbers sampled  randomly between 50 and 100
 
-batch_size_range = [i for i in range(50,100)]
+batch_size_range = [i for i in range(50,150)]
 batch_size = random.sample(batch_size_range, 5)
 
 for units_num in lstm_units:
@@ -112,4 +112,10 @@ for units_num in lstm_units:
         print('Number of LSTM cells:', units_num)
         print('Batch size:', batch_num)
 
+#stocks = tickers
+#data = combine_ts(stocks)
+#data = minutizer(data, split=5)
+#data, _ = preprocess_2_multi(data, stocks)
 
+#print(data.shape[1])
+#Data shape is 50
