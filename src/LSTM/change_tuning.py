@@ -89,8 +89,11 @@ def lstm_model_mse(lstm_units :list, batch_size : list, stocks: list,
             predicted_stock_returns = model.predict(X_val)
 
             for i, ticker in enumerate(stocks):
-                predcted_returns = predicted_stock_returns[:, i].copy()
-                actual_returns = y_val[:, i].copy()
+                predcted_returns = np.zeros((int(y_val.shape[0] / amount_of_stocks), 1))
+                actual_returns = np.zeros((int(y_val.shape[0] / amount_of_stocks), 1))
+                for j in range(int(y_val.shape[0] / amount_of_stocks)):
+                    predcted_returns[j] = predicted_stock_returns[amount_of_stocks * j + i]
+                    actual_returns[j] = y_val[amount_of_stocks * j + i]
                 #
                 MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
                 print('MSE:', MSE)
@@ -110,6 +113,6 @@ lstm_units = random.sample(lstm_range, 5)
 batch_size_range = [i for i in range(50,150)]
 batch_size = random.sample(batch_size_range, 5)
 
-tickers = ['ACN', 'AMAT'] #   'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 lstm_model_mse(lstm_units, batch_size,tickers)
