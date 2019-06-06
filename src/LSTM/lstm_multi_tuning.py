@@ -63,7 +63,7 @@ def lstm_model_mse(lstm_units : int, batch_size: int, stocks: list,
     model.add(Dropout(dropout_rate))
 
     # Output layer
-    model.add(Dense(units=int(lstm_units/ground_features), activation='linear', use_bias=True))
+    model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
 
     # Optimizer
     adam_opt = optimizers.adam(lr=learning_rate)
@@ -105,8 +105,6 @@ lstm_units = random.sample(lstm_range, 5)
 
 batch_size_range = [i for i in range(50,100)]
 batch_size = random.sample(batch_size_range, 5)
-
-
 
 for units_num in lstm_units:
     for batch_num in batch_size:
