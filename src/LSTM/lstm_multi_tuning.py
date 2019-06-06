@@ -110,7 +110,7 @@ batch_size = random.sample(batch_size_range, 5)
 
 for units_num in lstm_units:
     for batch_num in batch_size:
-        print('MSE:', lstm_model_mse(tickers, num) )
+        print('MSE:', lstm_model_mse(units_num, batch_num, tickers) )
         print('Number of LSTM cells:', units_num)
         print('Batch size:', batch_num)
 
