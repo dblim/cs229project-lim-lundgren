@@ -4,7 +4,6 @@ import keras.backend as K
 from keras import optimizers, losses
 import numpy as np
 import pandas as pd
-#from utils import minutizer, combine_ts, preprocess_2_multi
 
 
 def preprocess_2_multi(data, tickers: list, ground_features: int = 5, new_features: int = 4):
@@ -103,10 +102,25 @@ def lstm_model(stocks: list,
 
     # Transform data
     n, d = data.shape
+    amount_of_stocks = int(d/ground_features)
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
 
-    X = np.zeros((n - lookback, lookback, d))
-    Y = np.zeros((n - lookback, int(d/ground_features)))
+    new_n = (n - lookback) * amount_of_stocks
+
+    X_train = np.zeros((int(new_n * train_val_test_split['train']), lookback, ground_features))
+    Y_train = np.zeros((int(new_n * train_val_test_split['train']), 1))
+
+    X_val = np.zeros((int(new_n * (train_val_test_split['val'] - train_val_test_split['train'])),
+                      lookback, ground_features))
+    Y_val = np.zeros((int(new_n * (train_val_test_split['val'] - train_val_test_split['train'])), 1))
+
+    X_val = np.zeros((int(new_n * (train_val_test_split['test'] - train_val_test_split['val'])),
+                      lookback, ground_features))
+    Y_val = np.zeros((int(new_n * (train_val_test_split['test'] - train_val_test_split['val'])), 1))
+
+    for i in range(amount_of_stocks):
+        Y[i] = None
+
     for i in range(X.shape[0]):
         for j in range(d):
             X[i, :, j] = data.iloc[i:(i+lookback), j]
