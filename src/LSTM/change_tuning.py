@@ -1,7 +1,7 @@
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
 import keras.backend as K
-from keras import optimizers, losses
+from keras import optimizers
 import numpy as np
 import pandas as pd
 import random
@@ -15,16 +15,15 @@ def customized_loss(y_pred, y_true):
     logicals = K.equal(y_true_sign, y_pred_sign)
     logicals_0_1 = K.cast(logicals, 'float32')
     den = K.sum(logicals_0_1, axis=-1)
-    den = den + 0.01
-    return num/den
+    return num/(1 + den)
 
 
-def lstm_model_mse(lstm_units : list, batch_size: list, stocks: list,
+def lstm_model_mse(lstm_units :list, batch_size : list, stocks: list,
                lookback: int = 24,
                epochs: int = 100,
-               learning_rate: float = 0.0002,
+               learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
-               ground_features: int = 5,
+               ground_features: int = 4,
                percentile: int = 10):
     # Import data
     data = combine_ts(stocks)
@@ -33,26 +32,32 @@ def lstm_model_mse(lstm_units : list, batch_size: list, stocks: list,
 
     # Transform data
     n, d = data.shape
+    amount_of_stocks = int(d/ground_features)
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
 
-    X = np.zeros((n - lookback, lookback, d))
-    Y = np.zeros((n - lookback, int(d/ground_features)))
-    for i in range(X.shape[0]):
-        for j in range(d):
-            X[i, :, j] = data.iloc[i:(i+lookback), j]
-            if j < int(d/ground_features):
-                Y[i, j] = data.iloc[lookback + i, j * ground_features]
+    new_n = (n - lookback) * amount_of_stocks
 
-    X_train = X[0: int(n * train_val_test_split['train'])]
-    y_train = Y[0: int(n * train_val_test_split['train'])]
+    X = np.zeros((new_n, lookback, ground_features))
+    Y = np.zeros((new_n, 1))
 
-    X_val = X[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
-    y_val = Y[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
+    for i in range(n - lookback):
+        for j in range(amount_of_stocks):
+            idx = i * amount_of_stocks + j
+            for k in range(ground_features):
+                col = j * ground_features + k
+                X[idx, :, k] = data.iloc[i: (i + lookback), col]
+            Y[idx] = data.iloc[i + lookback, ground_features * j]
 
-    X_test = X[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
-    y_test = Y[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
+    X_train = X[0: int(new_n * train_val_test_split['train'])]
+    y_train = Y[0: int(new_n * train_val_test_split['train'])]
 
-    #Hyperparameter printing
+    X_val = X[int(new_n * train_val_test_split['train']): int(new_n * train_val_test_split['val'])]
+    y_val = Y[int(new_n * train_val_test_split['train']): int(new_n * train_val_test_split['val'])]
+
+    X_test = X[int(new_n * train_val_test_split['val']): int(new_n * train_val_test_split['test'])]
+    y_test = Y[int(new_n * train_val_test_split['val']): int(new_n * train_val_test_split['test'])]
+
+    # Hyperparameter printing
     for units_num in lstm_units:
         for batch_num in batch_size:
 
@@ -60,14 +65,14 @@ def lstm_model_mse(lstm_units : list, batch_size: list, stocks: list,
             model = Sequential()
 
             # Adding layers. LSTM(n) --> Dropout(p)
-            model.add(LSTM(units=units_num, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
+            model.add(LSTM(units=units_num, return_sequences=True, use_bias=True, input_shape=(lookback, ground_features)))
             model.add(Dropout(dropout_rate))
 
-            model.add(LSTM(units=int(units_num/ground_features), use_bias=False))
+            model.add(LSTM(units=10, use_bias=False))
             model.add(Dropout(dropout_rate))
 
             # Output layer
-            model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
+            model.add(Dense(units=1, activation='linear', use_bias=True))
 
             # Optimizer
             adam_opt = optimizers.adam(lr=learning_rate)
@@ -93,7 +98,6 @@ def lstm_model_mse(lstm_units : list, batch_size: list, stocks: list,
                 print('Batch size:', batch_num)
 
 
-
 # Search for lstm_units
 
 # 10 numbers sampled  randomly between 100 and 800
@@ -106,6 +110,6 @@ lstm_units = random.sample(lstm_range, 5)
 batch_size_range = [i for i in range(50,150)]
 batch_size = random.sample(batch_size_range, 5)
 
-tickers = ['ACN', 'AMAT',  'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT'] #   'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 lstm_model_mse(lstm_units, batch_size,tickers)
