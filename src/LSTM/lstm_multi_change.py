@@ -1,7 +1,7 @@
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
 import keras.backend as K
-from keras import optimizers, losses
+from keras import optimizers
 import numpy as np
 import pandas as pd
 
@@ -89,7 +89,7 @@ def customized_loss(y_pred, y_true):
 
 def lstm_model(stocks: list,
                lookback: int = 24,
-               epochs: int = 100,
+               epochs: int = 1,
                batch_size: int = 96,
                learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
