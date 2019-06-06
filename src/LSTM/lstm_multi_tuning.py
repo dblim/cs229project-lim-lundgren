@@ -21,7 +21,7 @@ def customized_loss(y_pred, y_true):
 
 def lstm_model_mse(lstm_units : int, batch_size: int, stocks: list,
                lookback: int = 24,
-               epochs: int = 2,
+               epochs: int = 100,
                learning_rate: float = 0.0002,
                dropout_rate: float = 0.1,
                ground_features: int = 5,
