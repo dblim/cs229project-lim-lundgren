@@ -20,7 +20,7 @@ def customized_loss(y_pred, y_true):
 
 def lstm_model_mse(lstm_units :list, batch_size : list, stocks: list,
                lookback: int = 24,
-               epochs: int = 100,
+               epochs: int = 1,
                learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
                ground_features: int = 4,
@@ -96,9 +96,9 @@ def lstm_model_mse(lstm_units :list, batch_size : list, stocks: list,
                     actual_returns[j] = y_val[amount_of_stocks * j + i]
                 #
                 MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
-                print('MSE:', MSE)
-                print('Number of LSTM cells:', units_num)
-                print('Batch size:', batch_num)
+            print('MSE:', MSE)
+            print('Number of LSTM cells:', units_num)
+            print('Batch size:', batch_num)
 
 
 # Search for lstm_units
