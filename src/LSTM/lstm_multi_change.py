@@ -116,7 +116,7 @@ def lstm_model(stocks: list,
             for k in range(ground_features):
                 col = j * ground_features + k
                 X[idx, :, k] = data.iloc[i: (i + lookback), col]
-            Y[idx] = data.iloc[i, ground_features * j]
+            Y[idx] = data.iloc[i + lookback, ground_features * j]
 
     X_train = X[0: int(new_n * train_val_test_split['train'])]
     y_train = Y[0: int(new_n * train_val_test_split['train'])]
@@ -161,8 +161,8 @@ def lstm_model(stocks: list,
     pd.DataFrame(y_test).to_csv('../output/LSTM_results/test_results/all_stocks_real.csv', index=False)
 
     for i, ticker in enumerate(stocks):
-        predcted_returns = np.zeros((y_val.shape[0], 1))
-        actual_returns = np.zeros((y_val.shape[0], 1))
+        predcted_returns = np.zeros((int(y_val.shape[0]/amount_of_stocks), 1))
+        actual_returns = np.zeros((int(y_val.shape[0]/amount_of_stocks), 1))
         for j in range(int(y_val.shape[0]/amount_of_stocks)):
             predcted_returns[j] = predicted_stock_returns[amount_of_stocks * j + i]
             actual_returns[j] = y_val[amount_of_stocks * j + i]
