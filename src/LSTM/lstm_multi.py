@@ -91,7 +91,7 @@ def customized_loss(y_pred, y_true):
 def lstm_model(stocks: list,
                lookback: int = 24,
                epochs: int = 100,
-               batch_size: int = 96,
+               batch_size: int = 100,
                learning_rate: float = 0.0002,
                dropout_rate: float = 0.1,
                ground_features: int = 4,

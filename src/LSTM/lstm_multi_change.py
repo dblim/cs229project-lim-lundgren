@@ -90,7 +90,7 @@ def customized_loss(y_pred, y_true):
 def lstm_model(stocks: list,
                lookback: int = 24,
                epochs: int = 50,
-               batch_size: int = 96,
+               batch_size: int = 100,
                learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
                ground_features: int = 4,
@@ -131,7 +131,7 @@ def lstm_model(stocks: list,
     model = Sequential()
 
     # Adding layers. LSTM(n) --> Dropout(p)
-    model.add(LSTM(units=20, return_sequences=True, use_bias=True, input_shape=(lookback, ground_features)))
+    model.add(LSTM(units=25, return_sequences=True, use_bias=True, input_shape=(lookback, ground_features)))
     model.add(Dropout(dropout_rate))
 
     model.add(LSTM(units=10, use_bias=False))

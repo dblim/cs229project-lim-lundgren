@@ -94,7 +94,7 @@ def lstm_model_mse(lstm_units :list, batch_size : list, stocks: list,
                     actual_returns[j] = y_val[amount_of_stocks * j + i]
                 #
                 MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
-                print(MSE.shape)
+
             print('MSE:', MSE)
             print('Number of LSTM cells:', units_num)
             print('Batch size:', batch_num)
