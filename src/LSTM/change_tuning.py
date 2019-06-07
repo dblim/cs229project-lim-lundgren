@@ -91,7 +91,6 @@ def lstm_model_mse(lstm_units :int, batch_size : int, stocks: list,
 
 tickers = ['ACN', 'AMAT' ] #  'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
-
 random.seed()
 
 # Search lstm size between 10 and 50
@@ -107,17 +106,14 @@ for k in range(2):
     lstm_units, batch_size = random.randint(10, 50), random.randint(80, 120)
     avg_mse = lstm_model_mse(lstm_units, batch_size, tickers)
     print('Average MSE:', avg_mse)
-    print('Number of LSTM cells:', lstm_units)
+    print('Number of LSTM units:', lstm_units)
     print('Batch size:', batch_size)
     lstm_units_list.append(lstm_units)
     batch_size_list.append(batch_size)
     avg_mse_list.append(avg_mse)
 
-print(lstm_units_list)
-print(batch_size_list)
-print(avg_mse_list)
-
 # Save MSE computations to pandas dataframe
 df = pd.DataFrame( list(zip(lstm_units_list, batch_size_list, avg_mse_list)), \
                     columns = ['Number of LSTM units', 'Batch Size', 'Average MSE' ])
-print(df)
+
+pd.DataFrame(df).to_csv('../output/LSTM_tuning/tuning.csv', index=False)
