@@ -87,7 +87,7 @@ def lstm_model_mse(lstm_units :int, batch_size : int, stocks: list,
         all_mse.append(MSE)
 
     avg_mse = np.array(all_mse)
-    return np.mean(avg_mse))
+    return np.mean(avg_mse)
 
 tickers = ['ACN', 'AMAT' ] #  'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
