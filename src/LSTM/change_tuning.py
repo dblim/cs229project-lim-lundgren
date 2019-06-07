@@ -116,3 +116,8 @@ for k in range(2):
 print(lstm_units_list)
 print(batch_size_list)
 print(avg_mse_list)
+
+# Save MSE computations to pandas dataframe
+df = pd.DataFrame( list(zip(lstm_units_list, batch_size_list, avg_mse_list)) \
+                    columns = ['Number of LSTM units', 'Batch Size', 'Average MSE' ]
+print(df))
