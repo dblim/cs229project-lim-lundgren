@@ -103,7 +103,7 @@ avg_mse_list = []
 
 # Choose 10 random pairs of numbers for lstm units, batch size
 
-for k in range(10):
+for k in range(2):
     lstm_units, batch_size = random.randint(10, 50), random.randint(80, 120)
     print('Number of LSTM cells:', lstm_units)
     print('Batch size:', batch_size)
