@@ -82,7 +82,7 @@ def lstm_model_mse(lstm_units :list, batch_size : list, stocks: list,
             model.compile(optimizer=adam_opt, loss=customized_loss)
 
             # Fit
-            history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_num, validation_data=(X_val, y_val), verbose = 0)
+            history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_num, validation_data=(X_val, y_val))
 
             # Validate
             predicted_stock_returns = model.predict(X_val)
