@@ -89,15 +89,29 @@ def lstm_model_mse(lstm_units :int, batch_size : int, stocks: list,
     avg_mse = np.array(all_mse)
     print('Average MSE:', np.mean(avg_mse))
 
-tickers = ['ACN', 'AMAT' ,  'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT' ] #  'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+
+
+random.seed()
 
 # Search lstm size between 10 and 50
 # Search batch size between 50 and 100.
-random.seed()
 
-#Choose 10 random random numbers
+lstm_units_list = []
+batch_size_list = []
+avg_mse_list = []
+
+# Choose 10 random pairs of numbers for lstm units, batch size
+
 for k in range(10):
     lstm_units, batch_size = random.randint(10, 50), random.randint(80, 120)
     print('Number of LSTM cells:', lstm_units)
     print('Batch size:', batch_size)
-    lstm_model_mse(lstm_units, batch_size, tickers)
+    avg_mse = lstm_model_mse(lstm_units, batch_size, tickers)
+    lstm_units_list.append(lstm_units)
+    batch_size_list.append(batch_size)
+    avg_mse_list.append(avg)
+
+print(lstm_units_list)
+print(batch_size_list)
+print(avg_mse_list)
