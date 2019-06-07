@@ -21,7 +21,7 @@ def minutizer(data, split: int = 5, ground_features: int = 5):
     return new_data
 
 
-def preprocess_2_multi(data, tickers: list, ground_features: int = 5, new_features: int = 5):
+def preprocess_2_multi(data, tickers: list, ground_features: int = 5, new_features: int = 4):
     n, d = data.shape
     new_d = int(d/ground_features)
     new_data = np.zeros((n, new_d * new_features))
@@ -32,12 +32,13 @@ def preprocess_2_multi(data, tickers: list, ground_features: int = 5, new_featur
         new_data[:, new_features * i + 1] = \
             data.iloc[:, ground_features * i + 1] - data.iloc[:, ground_features * i + 2]  # Spread
         new_data[:, new_features * i + 2] = \
-            data.iloc[:, ground_features * i + 4] - np.mean(data.iloc[:, ground_features * i + 4])  # Volume
+            (data.iloc[:, ground_features * i + 4] - np.min(data.iloc[:, ground_features * i + 4]))/ \
+            (np.max(data.iloc[:, ground_features * i + 4]) - np.min(data.iloc[:, ground_features * i + 4]))  # Volume
         new_data[:, new_features * i + 3] = \
-            data.iloc[:, ground_features * i + 3] - np.mean(data.iloc[:, ground_features * i + 3])  # Open
-        new_data[:, new_features * i + 4] = \
-            np.sin(2 * np.pi * new_data[:, new_features * i + 3]/np.max(new_data[:, new_features * i + 3]))  # Sin
-
+            (data.iloc[:, ground_features * i + 3] - np.min(data.iloc[:, ground_features * i + 3]))/ \
+            (np.max(data.iloc[:, ground_features * i + 3]) - np.min(data.iloc[:, ground_features * i + 3]))  # open prize
+        #new_data[:, new_features * i + 4] = \
+        #    np.sin(2 * np.pi * new_data[:, new_features * i + 3]/np.max(new_data[:, new_features * i + 3]))  # Sin
         open_prices[:, i] = data.iloc[:, ground_features * i + 3]
     header_data = []
     header_open = []
@@ -46,32 +47,9 @@ def preprocess_2_multi(data, tickers: list, ground_features: int = 5, new_featur
         header_data.append(ticker + '_spread')
         header_data.append(ticker + '_volume')  # Normalized
         header_data.append(ticker + '_normalized_open')
-        header_data.append(ticker + '_sin_returns')
+        #header_data.append(ticker + '_sin_returns')
         header_open.append(ticker + '_open')
     return pd.DataFrame(new_data, columns=header_data), pd.DataFrame(open_prices, columns=header_open)
-
-
-
-def combine_ts(tickers: list):
-    stock0 = tickers[0]
-    path = '../data/sectors/Information Technology/'+stock0+'.csv'
-    data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
-    renamer = {'close': stock0+'_close', 'high': stock0+'_high', 'low': stock0+'_low',
-               'open': stock0+'_open', 'volume': stock0+'_volume', }
-    data = data.rename(columns=renamer)
-    tickers.remove(tickers[0])
-    for str in tickers:
-        path = '../data/sectors/Information Technology/'+str+'.csv'
-        new_data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
-        renamer = {'close': str+'_close', 'high': str+'_high', 'low': str+'_low',
-                   'open': str+'_open', 'volume': str+'_volume', }
-        new_data = new_data.rename(columns=renamer)
-
-        data = pd.concat([data, new_data], axis=1, sort=True)
-    tickers.insert(0, stock0)
-    return data.interpolate()[1:data.shape[0]]
-
-
 
 def preprocess_2_single(data, ticker: str, ground_features: int = 5, new_features: int = 5):
     n, d = data.shape
@@ -100,3 +78,26 @@ def preprocess_2_single(data, ticker: str, ground_features: int = 5, new_feature
     header_data.append(ticker + '_sin_returns')
     header_open.append(ticker + '_open')
     return pd.DataFrame(new_data, columns=header_data), pd.DataFrame(open_prices, columns=header_open)
+
+
+
+def combine_ts(tickers: list):
+    stock0 = tickers[0]
+    path = '../data/sectors/Information Technology/'+stock0+'.csv'
+    data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
+    renamer = {'close': stock0+'_close', 'high': stock0+'_high', 'low': stock0+'_low',
+               'open': stock0+'_open', 'volume': stock0+'_volume', }
+    data = data.rename(columns=renamer)
+    tickers.remove(tickers[0])
+    for str in tickers:
+        path = '../data/sectors/Information Technology/'+str+'.csv'
+        new_data = pd.read_csv(path, index_col="timestamp", parse_dates=True)
+        renamer = {'close': str+'_close', 'high': str+'_high', 'low': str+'_low',
+                   'open': str+'_open', 'volume': str+'_volume', }
+        new_data = new_data.rename(columns=renamer)
+
+        data = pd.concat([data, new_data], axis=1, sort=True)
+    tickers.insert(0, stock0)
+    return data.interpolate()[1:data.shape[0]]
+
+
