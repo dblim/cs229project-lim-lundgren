@@ -9,7 +9,7 @@ from lstm_utils import minutizer, combine_ts, preprocess_2_multi, customized_los
 
 def lstm_model_mse(lstm_units :int, batch_size : int, stocks: list,
                lookback: int = 24,
-               epochs: int = 2,
+               epochs: int = 30,
                learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
                ground_features: int = 4,
@@ -89,7 +89,7 @@ def lstm_model_mse(lstm_units :int, batch_size : int, stocks: list,
     avg_mse = np.array(all_mse)
     return np.mean(avg_mse)
 
-tickers = ['ACN', 'AMAT' ] #  'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT' ,   'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 random.seed()
 
@@ -100,9 +100,9 @@ lstm_units_list = []
 batch_size_list = []
 avg_mse_list = []
 
-# Choose 10 random pairs of numbers for lstm units, batch size
+# Choose 15 random pairs of numbers for lstm units, batch size
 
-for k in range(2):
+for k in range(15):
     lstm_units, batch_size = random.randint(10, 50), random.randint(80, 120)
     avg_mse = lstm_model_mse(lstm_units, batch_size, tickers)
     print('Average MSE:', avg_mse)
@@ -116,4 +116,4 @@ for k in range(2):
 df = pd.DataFrame( list(zip(lstm_units_list, batch_size_list, avg_mse_list)), \
                     columns = ['Number of LSTM units', 'Batch Size', 'Average MSE' ])
 
-pd.DataFrame(df).to_csv('../output/LSTM_tuning/tuning.csv', index=False)
+pd.DataFrame(df).to_csv('../output/LSTM_tuning/tuning_30epochs.csv', index=False)
