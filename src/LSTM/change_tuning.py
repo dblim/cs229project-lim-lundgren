@@ -113,6 +113,6 @@ lstm_units = random.sample(lstm_range, 5)
 batch_size_range = [i for i in range(90,110)]
 batch_size = random.sample(batch_size_range, 5)
 
-tickers = ['ACN', 'AMAT' , 'CDNS', 'IBM'] # 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT' , 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 lstm_model_mse(lstm_units, batch_size,tickers)
