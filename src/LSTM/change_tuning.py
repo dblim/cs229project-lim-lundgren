@@ -110,7 +110,7 @@ for k in range(10):
     avg_mse = lstm_model_mse(lstm_units, batch_size, tickers)
     lstm_units_list.append(lstm_units)
     batch_size_list.append(batch_size)
-    avg_mse_list.append(avg)
+    avg_mse_list.append(avg_mse)
 
 print(lstm_units_list)
 print(batch_size_list)
