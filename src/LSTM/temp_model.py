@@ -117,8 +117,6 @@ y_train = Y[0: int(new_n * train_val_test_split['train'])]
 X_val = X[int(new_n * train_val_test_split['train']): int(new_n * train_val_test_split['val'])]
 y_val = Y[int(new_n * train_val_test_split['train']): int(new_n * train_val_test_split['val'])]
 
-X_test = X[int(new_n * train_val_test_split['val']): int(new_n * train_val_test_split['test'])]
-y_test = Y[int(new_n * train_val_test_split['val']): int(new_n * train_val_test_split['test'])]
 
 
 def keras_fmin_fnct(space):
@@ -143,10 +141,10 @@ def keras_fmin_fnct(space):
     adam_opt = optimizers.adam(lr=learning_rate)
 
     # Compile
-    model.compile(optimizer='adam', loss='mean_squared_error')
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
 
     # Fit
-    result = model.fit(X_train, y_train, epochs=2, batch_size=96, validation_data=(X_val, y_val))
+    result = model.fit(X_train, y_train, epochs=2, batch_size=96, verbose=2, validation_data=(X_val, y_val))
 
     #get the highest validation accuracy of the training epochs
     validation_acc = result.history['val_acc']
