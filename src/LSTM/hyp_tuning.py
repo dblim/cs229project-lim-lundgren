@@ -9,7 +9,7 @@ from lstm_utils import minutizer, combine_ts, preprocess_2_multi, customized_los
 
 
 def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
-               epochs: int = 30,
+               epochs: int = 2,
                 batch_size : int =  96,
                learning_rate: float = 0.0001,
                 dropout_rate : float = 0.2,
@@ -90,7 +90,7 @@ def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
     avg_mse = np.array(all_mse)
     return np.mean(avg_mse)
 
-tickers = ['ACN', 'AMAT' ,    'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT' ] #     'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 random.seed()
 
@@ -117,7 +117,7 @@ for k in range(4):
 
 
 # Save MSE computations to pandas dataframe
-df = pd.DataFrame( list(zip(lstm_units_list, batch_size_list, dropout_list, avg_mse_list)), \
-                    columns = ['Number of LSTM units', 'Batch size', 'Dropout rate', 'Average MSE' ])
+df = pd.DataFrame( list(zip(lstm_units_list, lookback_list, avg_mse_list)), \
+                    columns = ['Number of LSTM units', 'Lookback period', 'Average MSE' ])
 random_integer = random.randint(1,100)
-pd.DataFrame(df).to_csv('../output/LSTM_tuning/tuning_'  + str(random_integer) + '_epochs_' +  str(30) +  '.csv', index=False)
+pd.DataFrame(df).to_csv('../output/LSTM_tuning/tuning_'  + str(random_integer) + '_epochs_' +  str(2) +  '.csv', index=False)
