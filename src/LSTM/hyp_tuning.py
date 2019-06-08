@@ -14,7 +14,7 @@ data = pd.read_csv('../data/preprocessed_time_series_data.csv')
 data = data.drop(columns=['Unnamed: 0'])
 
 
-def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
+def lstm_model_mse(lookback : int ,  stocks: list,
                epochs: int = 40,
                 batch_size : int =  96,
                learning_rate: float = 0.0001,
@@ -42,7 +42,10 @@ def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
     X_test = X[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
     y_test = Y[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
 
-    # Hyperparameter printing
+
+
+    # Initialising the LSTM
+    model = Sequential()
 
     # Adding layers. LSTM(n) --> Dropout(p)
     model.add(LSTM(units=d, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
@@ -115,10 +118,10 @@ if random is True:
 
 if deterministic is True:
     periods = [4,8,12]
-    lstm_units = 25
+
     avg_mse_list = []
     for lookback in periods:
-        avg_mse = lstm_model_mse(lstm_units, lookback, tickers)
+        avg_mse = lstm_model_mse( lookback, tickers)
         print('Lookback period:', lookback)
         print('Average MSE:', avg_mse)
         avg_mse_list.append(avg_mse)
