@@ -9,7 +9,7 @@ from lstm_utils import minutizer, combine_ts, preprocess_2_multi, customized_los
 
 def lstm_model_mse(lstm_units :int, batch_size : int, stocks: list,
                lookback: int = 24,
-               epochs: int = 30,
+               epochs: int = 2,
                learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
                ground_features: int = 4,
@@ -115,5 +115,5 @@ for k in range(15):
 # Save MSE computations to pandas dataframe
 df = pd.DataFrame( list(zip(lstm_units_list, batch_size_list, avg_mse_list)), \
                     columns = ['Number of LSTM units', 'Batch Size', 'Average MSE' ])
-
-pd.DataFrame(df).to_csv('../output/LSTM_tuning/tuning_30epochs.csv', index=False)
+random_integer = random.randint(1,100)
+pd.DataFrame(df).to_csv('../output/LSTM_tuning/tuning' + str(random_integer) + '.csv', index=False)
