@@ -137,10 +137,11 @@ if rand_tuning is True:
     # Choose 2 random pairs of numbers for lstm units, lookback, dropout rate
     num_trials = 2
     for k in range(num_trials):
-        lookback, learning_rate, output_dim_individual_layer =  \
-        random.randint(10, 40), np.random.choice([0.1, 0.01, 0.001, 0.0001, 0.5, 0.05, 0.005, 0.0005]), random.randint( 4, 40)
-
+        lookback  = random.randint(10, 40)
+        learning_rate =    np.random.choice([0.1, 0.01, 0.001, 0.0001, 0.5, 0.05, 0.005, 0.0005])
+        output_dim_individual_layer = random.randint( 4, 40)
         avg_mse = lstm_model_mse( lookback, learning_rate, output_dim_individual_layer, tickers)
+
         print('Number of LSTM units:', output_dim_individual_layer)
         print('Lookback period:', lookback)
         print('Learning rate:', learning_rate)
@@ -155,7 +156,8 @@ if rand_tuning is True:
     df = pd.DataFrame( list(zip(output_dim_individual_layer_list, lookback_list, learning_rate_list, avg_mse_list)), \
                         columns = ['Number of LSTM units', 'Lookback period', 'Learning rate', 'Average MSE' ])
     random_integer = random.randint(1,100)
-    pd.DataFrame(df).to_csv('../output/LSTM_tuning/rand_tuning_'  + str(random_integer) + '_epochs_' +  str(2) +  '.csv', index=False)
+    pd.DataFrame(df).to_csv('../output/LSTM_tuning/random_samples/rand_tuning_' + \
+                             str(random_integer) + '_epochs_' +  str(50) +  '.csv', index=False)
 
 if det_tuning is True:
     periods = [4,8,12,16,20,24,28,32,36,40]
