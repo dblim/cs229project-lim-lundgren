@@ -42,7 +42,7 @@ def lstm_model_mse(lookback : int ,  stocks: list,
     X_test = X[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
     y_test = Y[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
 
-
+    print(d)
 
     # Initialising the LSTM
     model = Sequential()
@@ -117,7 +117,7 @@ if random is True:
     pd.DataFrame(df).to_csv('../output/LSTM_tuning/rand_tuning'  + str(random_integer) + '_epochs_' +  str(40) +  '.csv', index=False)
 
 if deterministic is True:
-    periods = [4,8,12,16,20,24,28,32,26,40]
+    periods = [4,8,12,16,20,24,28,32,36,40]
 
     avg_mse_list = []
     for lookback in periods:
