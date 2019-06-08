@@ -1,5 +1,5 @@
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, Dropout
+from keras.layers import Dense, LSTM, Dropout, Concatenate, Input
 import keras.backend as K
 from keras import optimizers
 import numpy as np
