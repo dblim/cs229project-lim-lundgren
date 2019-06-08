@@ -21,33 +21,26 @@ def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
                 dropout_rate : float = 0.1,
                ground_features: int = 4):
 
-    # Transform data
+    # Transform data (This transformation is according to lstm_multi and NOT change)
     n, d = data.shape
-    amount_of_stocks = int(d/ground_features)
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
 
-    new_n = (n - lookback) * amount_of_stocks
+    X = np.zeros((n - lookback, lookback, d))
+    Y = np.zeros((n - lookback, int(d / ground_features)))
+    for i in range(X.shape[0]):
+        for j in range(d):
+            X[i, :, j] = data.iloc[i:(i + lookback), j]
+            if j < int(d / ground_features):
+                Y[i, j] = data.iloc[lookback + i, j * ground_features]
 
-    X = np.zeros((new_n, lookback, ground_features))
-    Y = np.zeros((new_n, 1))
+    X_train = X[0: int(n * train_val_test_split['train'])]
+    y_train = Y[0: int(n * train_val_test_split['train'])]
 
-    for i in range(n - lookback):
-        for j in range(amount_of_stocks):
-            idx = i * amount_of_stocks + j
-            for k in range(ground_features):
-                col = j * ground_features + k
-                X[idx, :, k] = data.iloc[i: (i + lookback), col]
-            Y[idx] = data.iloc[i + lookback, ground_features * j]
+    X_val = X[int(n * train_val_test_split['train']): int(n * train_val_test_split['val'])]
+    y_val = Y[int(n * train_val_test_split['train']): int(n * train_val_test_split['val'])]
 
-    X_train = X[0: int(new_n * train_val_test_split['train'])]
-    y_train = Y[0: int(new_n * train_val_test_split['train'])]
-
-
-    X_val = X[int(new_n * train_val_test_split['train']): int(new_n * train_val_test_split['val'])]
-    y_val = Y[int(new_n * train_val_test_split['train']): int(new_n * train_val_test_split['val'])]
-
-    X_test = X[int(new_n * train_val_test_split['val']): int(new_n * train_val_test_split['test'])]
-    y_test = Y[int(new_n * train_val_test_split['val']): int(new_n * train_val_test_split['test'])]
+    X_test = X[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
+    y_test = Y[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
 
     # Hyperparameter printing
 
@@ -135,7 +128,7 @@ if deterministic is True:
     # Save MSE computations to pandas dataframe
     df = pd.DataFrame(list(zip(periods, avg_mse_list)), \
                       columns=['Lookback period', 'Average MSE'])
-    pd.DataFrame(df).to_csv('../output/LSTM_tuning/det_tuning' + str(4_8_12) + '_epochs_' + str(40) + '.csv',\
+    pd.DataFrame(df).to_csv('../output/LSTM_tuning/det_tuning' + str(4_8_12) + '_epochs_' + str(2) + '.csv',\
                             index=False)
 
 
