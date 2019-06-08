@@ -126,7 +126,7 @@ if deterministic is True:
     periods = [4,8,12]
     lstm_units = 25
     for lookback in periods:
-        avg_mse = lstm_model_mse(lstm_units, lookback, tickers):
+        avg_mse = lstm_model_mse(lstm_units, lookback, tickers)
         print('Lookback period:', lookback)
         print('Average MSE:', avg_mse)
         # Save MSE computations to pandas dataframe
