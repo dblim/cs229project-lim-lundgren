@@ -1,4 +1,4 @@
-from keras.models import Sequential
+from keras.models import Sequential, Model
 from keras.layers import Dense, LSTM, Dropout, Concatenate, Input
 import keras.backend as K
 from keras import optimizers
@@ -95,8 +95,6 @@ def lstm_model_mse(lookback: int,  # HP,
     output_layer = Dense(output_dim_combined_layer)(full_drop)
 
     full_model = Model(inputs=[ts1, ts2, ts3, ts4, ts5, ts6, ts7, ts8, ts9, ts10], outputs=output_layer)
-
-
 
     adam_opt = optimizers.adam(lr=learning_rate)
 
