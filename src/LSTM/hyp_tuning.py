@@ -116,4 +116,4 @@ for k in range(15):
 df = pd.DataFrame( list(zip(lstm_units_list, batch_size_list, avg_mse_list)), \
                     columns = ['Number of LSTM units', 'Batch Size', 'Average MSE' ])
 random_integer = random.randint(1,100)
-pd.DataFrame(df).to_csv('../output/LSTM_tuning/tuning' + str(random_integer) + '.csv', index=False)
+pd.DataFrame(df).to_csv('../output/LSTM_tuning/tuning'  + str(random_integer) + 'epochs_' +  str(2) +  '.csv', index=False)
