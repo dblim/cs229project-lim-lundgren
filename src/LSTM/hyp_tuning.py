@@ -9,7 +9,7 @@ from lstm_utils import minutizer, combine_ts, preprocess_2_multi, customized_los
 
 data = pd.read_csv('../data/preprocessed_time_series_data.csv')
 data = data.drop(columns=['Unnamed: 0'])
-print(data)
+
 
 def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
                epochs: int = 40,
@@ -101,9 +101,9 @@ lookback_list = []
 avg_mse_list = []
 
 
-# Choose 4 random pairs of numbers for lstm units, batch size
+# Choose 2 random pairs of numbers for lstm units, batch size
 
-for k in range(3):
+for k in range(2):
     lstm_units, lookback = random.randint(10, 60), random.randint(10, 40)
     avg_mse = lstm_model_mse(lstm_units, lookback, tickers)
     print('Average MSE:', avg_mse)
