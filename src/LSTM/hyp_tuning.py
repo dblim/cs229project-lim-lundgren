@@ -17,7 +17,6 @@ def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
                ground_features: int = 4,
                percentile: int = 10):
 
-
     # Transform data
     n, d = data.shape
     amount_of_stocks = int(d/ground_features)
