@@ -1,0 +1,3 @@
+Number of LSTM units,Lookback period,Average MSE
+96,12,1.9348119753724374e-06
+80,33,2.0997166794112053e-06

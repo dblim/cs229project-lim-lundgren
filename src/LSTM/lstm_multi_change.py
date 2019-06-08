@@ -49,8 +49,7 @@ def lstm_model(stocks: list,
                 X[idx, :, k] = data.iloc[i: (i + lookback), col]
             Y[idx] = data.iloc[i + lookback, ground_features * j]
 
-    np.save('../data/X_data_lstm.npz', X)
-    np.save('../data/Y_data_lstm.npz', Y)
+
 
 
     X_train = X[0: int(new_n * train_val_test_split['train'])]
