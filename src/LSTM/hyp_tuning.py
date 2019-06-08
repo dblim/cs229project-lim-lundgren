@@ -15,7 +15,7 @@ data = data.drop(columns=['Unnamed: 0'])
 
 
 def lstm_model_mse(lookback : int ,  stocks: list,
-               epochs: int = 2,
+               epochs: int = 40,
                 batch_size : int =  96,
                learning_rate: float = 0.0001,
                 dropout_rate : float = 0.1,
@@ -84,7 +84,7 @@ def lstm_model_mse(lookback : int ,  stocks: list,
     avg_mse = np.array(all_mse)
     return np.mean(avg_mse)
 
-tickers = ['ACN', 'AMAT' ] #    'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT' ,    'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 if random is True:
     # Choose 2 random pairs of numbers for lstm units, batch size
@@ -117,7 +117,7 @@ if random is True:
     pd.DataFrame(df).to_csv('../output/LSTM_tuning/rand_tuning'  + str(random_integer) + '_epochs_' +  str(40) +  '.csv', index=False)
 
 if deterministic is True:
-    periods = [4,8,12]
+    periods = [4,8,12,16,20,24,28,32,26,40]
 
     avg_mse_list = []
     for lookback in periods:
@@ -128,7 +128,7 @@ if deterministic is True:
     # Save MSE computations to pandas dataframe
     df = pd.DataFrame(list(zip(periods, avg_mse_list)), \
                       columns=['Lookback period', 'Average MSE'])
-    pd.DataFrame(df).to_csv('../output/LSTM_tuning/det_tuning' + str(4_8_12) + '_epochs_' + str(2) + '.csv',\
+    pd.DataFrame(df).to_csv('../output/LSTM_tuning/det_tuning' + str(4_40) + '_epochs_' + str(40) + '.csv',\
                             index=False)
 
 
