@@ -44,19 +44,15 @@ def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
 
     # Hyperparameter printing
 
-
-    # Initialising the LSTM
-    model = Sequential()
-
     # Adding layers. LSTM(n) --> Dropout(p)
-    model.add(LSTM(units=lstm_units, return_sequences=True, use_bias=True, input_shape=(lookback, ground_features)))
+    model.add(LSTM(units=d, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=10, use_bias=False))
+    model.add(LSTM(units=int(d / ground_features), use_bias=False))
     model.add(Dropout(dropout_rate))
 
     # Output layer
-    model.add(Dense(units=1, activation='linear', use_bias=True))
+    model.add(Dense(units=int(d / ground_features), activation='linear', use_bias=True))
 
     # Optimizer
     adam_opt = optimizers.adam(lr=learning_rate)
