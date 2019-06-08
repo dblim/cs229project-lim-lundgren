@@ -15,9 +15,8 @@ def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
                epochs: int = 40,
                 batch_size : int =  96,
                learning_rate: float = 0.0001,
-                dropout_rate : float = 0.2,
-               ground_features: int = 4,
-               percentile: int = 10):
+                dropout_rate : float = 0.1,
+               ground_features: int = 4):
 
     # Transform data
     n, d = data.shape
@@ -104,7 +103,7 @@ avg_mse_list = []
 
 # Choose 4 random pairs of numbers for lstm units, batch size
 
-for k in range(2):
+for k in range(3):
     lstm_units, lookback = random.randint(10, 60), random.randint(10, 40)
     avg_mse = lstm_model_mse(lstm_units, lookback, tickers)
     print('Average MSE:', avg_mse)
