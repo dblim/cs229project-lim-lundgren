@@ -15,7 +15,7 @@ data = data.drop(columns=['Unnamed: 0'])
 
 
 def lstm_model_mse(lookback : int ,  stocks: list,
-               epochs: int = 40,
+               epochs: int = 2,
                 batch_size : int =  96,
                learning_rate: float = 0.0001,
                 dropout_rate : float = 0.1,
