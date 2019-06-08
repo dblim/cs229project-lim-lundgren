@@ -14,48 +14,54 @@ data = pd.read_csv('../data/preprocessed_time_series_data.csv')
 data = data.drop(columns=['Unnamed: 0'])
 
 
-def lstm_model_mse(lstm_units :int, lookback : int , dropout_rate : float,   stocks: list,
+def lstm_model_mse(lstm_units :int, lookback : int , learning_rate : float   stocks: list,
                epochs: int = 40,
                 batch_size : int =  96,
-               learning_rate: float = 0.0001,
-
+                dropout_rate : 0.1
                ground_features: int = 4):
+    amount_of_stocks = 10
 
-    # Transform data (This transformation is according to lstm_multi and NOT change)
+    # Transform data according to lstm_partial_ts
     n, d = data.shape
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
 
-    X = np.zeros((n - lookback, lookback, d))
-    Y = np.zeros((n - lookback, int(d / ground_features)))
+    X = np.zeros((amount_of_stocks, n - lookback, lookback, ground_features))
+    Y = np.zeros((amount_of_stocks, n - lookback, ground_features))
+    for i in range(amount_of_stocks):
+        for j in range(X.shape[0]):
+            for k in range(ground_features):
+                idx = i * ground_features + k
+                X[i, j, :, k] = data.values[i: (i + lookback), ]
+
     for i in range(X.shape[0]):
         for j in range(d):
-            X[i, :, j] = data.iloc[i:(i + lookback), j]
-            if j < int(d / ground_features):
+            X[i, :, j] = data.iloc[i:(i+lookback), j]
+            if j < int(d/ground_features):
                 Y[i, j] = data.iloc[lookback + i, j * ground_features]
 
     X_train = X[0: int(n * train_val_test_split['train'])]
     y_train = Y[0: int(n * train_val_test_split['train'])]
 
-    X_val = X[int(n * train_val_test_split['train']): int(n * train_val_test_split['val'])]
-    y_val = Y[int(n * train_val_test_split['train']): int(n * train_val_test_split['val'])]
+    X_val = X[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
+    y_val = Y[int(n*train_val_test_split['train']): int(n*train_val_test_split['val'])]
 
     X_test = X[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
     y_test = Y[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
 
-    print(d)
-
     # Initialising the LSTM
+
+
     model = Sequential()
 
     # Adding layers. LSTM(n) --> Dropout(p)
-    model.add(LSTM(units=lstm_units, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
+    model.add(LSTM(units=10, return_sequences=True, use_bias=True, input_shape=(X_train.shape[1], d)))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=lstm_units, use_bias=False))
+    model.add(LSTM(units=int(d/ground_features), use_bias=False))
     model.add(Dropout(dropout_rate))
 
     # Output layer
-    model.add(Dense(units=int(d / ground_features), activation='linear', use_bias=True))
+    model.add(Dense(units=int(d/ground_features), activation='linear', use_bias=True))
 
     # Optimizer
     adam_opt = optimizers.adam(lr=learning_rate)
@@ -63,8 +69,9 @@ def lstm_model_mse(lstm_units :int, lookback : int , dropout_rate : float,   sto
     # Compile
     model.compile(optimizer=adam_opt, loss=customized_loss)
 
+
     # Fit
-    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), verbose = 0)
+    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
 
     # Validate
     predicted_stock_returns = model.predict(X_val)
@@ -76,6 +83,11 @@ def lstm_model_mse(lstm_units :int, lookback : int , dropout_rate : float,   sto
         #
         MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
         all_mse.append(MSE)
+
+        predcted_returns = predicted_stock_returns[:, i].copy()
+        actual_returns = y_val[:, i].copy()
+        #
+        MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
 
     avg_mse = np.array(all_mse)
     return np.mean(avg_mse)
