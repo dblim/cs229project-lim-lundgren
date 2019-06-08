@@ -114,6 +114,7 @@ def lstm_model_mse(lookback: int,  # HP,
         actual_returns = y_val[:, i].copy()
         #
         MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
+        all_mse.append(MSE)
     avg_mse = np.array(all_mse)
     return np.mean(avg_mse)
 
