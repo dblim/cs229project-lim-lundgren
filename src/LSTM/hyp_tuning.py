@@ -52,7 +52,7 @@ def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
     model.add(LSTM(units=lstm_units, return_sequences=True, use_bias=True, input_shape=(lookback, ground_features)))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=20, use_bias=False))
+    model.add(LSTM(units=10, use_bias=False))
     model.add(Dropout(dropout_rate))
 
     # Output layer
