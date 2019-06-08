@@ -7,6 +7,7 @@ import pandas as pd
 import random
 from lstm_utils import minutizer, combine_ts, preprocess_2_multi, customized_loss
 
+data = pd.read_csv('../data/preprocessed_time_series_data.csv')
 
 def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
                epochs: int = 2,
@@ -15,10 +16,7 @@ def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
                 dropout_rate : float = 0.2,
                ground_features: int = 4,
                percentile: int = 10):
-    # Import data
-    data = combine_ts(stocks)
-    data = minutizer(data, split=5)
-    data, _ = preprocess_2_multi(data, stocks)
+
 
     # Transform data
     n, d = data.shape
