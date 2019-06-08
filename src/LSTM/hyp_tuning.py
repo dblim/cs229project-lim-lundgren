@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import random
 from lstm_utils import minutizer, combine_ts, preprocess_2_multi, customized_loss
+
 random : bool = False
 deterministic : bool = True
 
@@ -125,15 +126,17 @@ if random is True:
 if deterministic is True:
     periods = [4,8,12]
     lstm_units = 25
+    avg_mse_list = []
     for lookback in periods:
         avg_mse = lstm_model_mse(lstm_units, lookback, tickers)
         print('Lookback period:', lookback)
         print('Average MSE:', avg_mse)
-        # Save MSE computations to pandas dataframe
-        df = pd.DataFrame(list(zip(periods, avg_mse_list)), \
-                          columns=['Lookback period', 'Average MSE'])
-        pd.DataFrame(df).to_csv('../output/LSTM_tuning/det_tuning' + str(lookback) + '_epochs_' + str(40) + '.csv',\
-                                index=False)
+        avg_mse_list.append(avg_mse)
+    # Save MSE computations to pandas dataframe
+    df = pd.DataFrame(list(zip(periods, avg_mse_list)), \
+                      columns=['Lookback period', 'Average MSE'])
+    pd.DataFrame(df).to_csv('../output/LSTM_tuning/det_tuning' + str(4_8_12) + '_epochs_' + str(40) + '.csv',\
+                            index=False)
 
 
 
