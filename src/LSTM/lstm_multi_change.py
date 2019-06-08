@@ -2,9 +2,11 @@ from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
 import keras.backend as K
 from keras import optimizers
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from lstm_utils import minutizer, combine_ts, preprocess_2_multi
+from LSTM.lstm_utils import minutizer, combine_ts, preprocess_2_multi
+
 
 def customized_loss(y_pred, y_true):
     num = K.sum(K.square(y_pred - y_true), axis=-1)
@@ -19,7 +21,7 @@ def customized_loss(y_pred, y_true):
 def lstm_model(stocks: list,
                lookback: int = 24,
                epochs: int = 50,
-               batch_size: int = 100,
+               batch_size: int = 96,
                learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
                ground_features: int = 4,
@@ -47,6 +49,10 @@ def lstm_model(stocks: list,
                 X[idx, :, k] = data.iloc[i: (i + lookback), col]
             Y[idx] = data.iloc[i + lookback, ground_features * j]
 
+    np.save('../data/X_data_lstm.npz', X)
+    np.save('../data/Y_data_lstm.npz', Y)
+
+
     X_train = X[0: int(new_n * train_val_test_split['train'])]
     y_train = Y[0: int(new_n * train_val_test_split['train'])]
 
@@ -63,7 +69,10 @@ def lstm_model(stocks: list,
     model.add(LSTM(units=25, return_sequences=True, use_bias=True, input_shape=(lookback, ground_features)))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=10, use_bias=False))
+    model.add(LSTM(units=20, return_sequences=True, use_bias=False))
+    model.add(Dropout(dropout_rate))
+
+    model.add(LSTM(units=20, return_sequences=False, use_bias=False))
     model.add(Dropout(dropout_rate))
 
     # Output layer
@@ -88,6 +97,10 @@ def lstm_model(stocks: list,
     pd.DataFrame(y_val).to_csv('../output/LSTM_results/valid_results/all_stocks_real.csv', index=False)
     pd.DataFrame(model.predict(X_test)).to_csv('../output/LSTM_results/test_results/all_stocks_pred.csv', index=False)
     pd.DataFrame(y_test).to_csv('../output/LSTM_results/test_results/all_stocks_real.csv', index=False)
+
+    plt.plot(history.history['loss'])
+    plt.savefig('lossfunction')
+    plt.close()
 
     for i, ticker in enumerate(stocks):
         predcted_returns = np.zeros((int(y_val.shape[0]/amount_of_stocks), 1))

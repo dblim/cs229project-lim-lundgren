@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import keras.backend as K
 
+
 def minutizer(data, split: int = 5, ground_features: int = 5):
     n, d = data.shape
     new_data = pd.DataFrame(np.zeros((int(n/split) - 1, d)), columns=list(data))
