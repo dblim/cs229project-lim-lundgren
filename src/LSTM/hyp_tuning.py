@@ -18,7 +18,7 @@ def lstm_model_mse(lookback: int,  # HP,
                 learning_rate: float,  # HP
                 output_dim_individual_layer: int,  # HP
                 stocks: list,
-                epochs: int = 2,  # HP
+                epochs: int = 50,  # HP
                 batch_size: int = 96,  # HP
                 output_dim_combined_layer: int = 10,  # = amount of stocks
                 dropout_rate: float = 0.1,  # HP
