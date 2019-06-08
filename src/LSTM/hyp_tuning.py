@@ -64,7 +64,7 @@ def lstm_model_mse(lstm_units :int, lookback : int , dropout_rate : float,   sto
     model.compile(optimizer=adam_opt, loss=customized_loss)
 
     # Fit
-    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), verbose = 0)
 
     # Validate
     predicted_stock_returns = model.predict(X_val)
