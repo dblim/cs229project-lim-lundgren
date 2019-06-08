@@ -8,11 +8,11 @@ import random
 from lstm_utils import minutizer, combine_ts, preprocess_2_multi, customized_loss
 
 
-
-def lstm_model_mse(lstm_units :int, batch_size : int, dropout_rate : float, stocks: list,
-               lookback: int = 24,
+def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
                epochs: int = 30,
+                batch_size : int =  96,
                learning_rate: float = 0.0001,
+                dropout_rate : float = 0.2,
                ground_features: int = 4,
                percentile: int = 10):
     # Import data
@@ -94,26 +94,25 @@ tickers = ['ACN', 'AMAT' ,    'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU
 
 random.seed()
 
-# Search lstm size between 10 and 50
-# Search batch size between 50 and 100.
+# Search lstm size between 10 and 100
+# Search batch size between 50 and 150.
+# Search dropout rate between 0.2
 
 lstm_units_list = []
-batch_size_list = []
+lookback_list = []
 avg_mse_list = []
-dropout_list = []
+
 
 # Choose 4 random pairs of numbers for lstm units, batch size
 
 for k in range(4):
-    lstm_units, batch_size, dropout_rate = random.randint(10, 100), random.randint(50, 150), np.random.uniform(0.1,0.5)
-    avg_mse = lstm_model_mse(lstm_units, batch_size, dropout_rate, tickers)
+    lstm_units, lookback = random.randint(10, 100), random.randint(10, 40)
+    avg_mse = lstm_model_mse(lstm_units, lookback, tickers)
     print('Average MSE:', avg_mse)
     print('Number of LSTM units:', lstm_units)
-    print('Batch size:', batch_size)
-    print('Dropout rate:', dropout_rate)
+    print('Lookback period:', lookback)
     lstm_units_list.append(lstm_units)
-    batch_size_list.append(batch_size)
-    dropout_list.append(dropout_rate)
+    lookback_list.append(lookback)
     avg_mse_list.append(avg_mse)
 
 
