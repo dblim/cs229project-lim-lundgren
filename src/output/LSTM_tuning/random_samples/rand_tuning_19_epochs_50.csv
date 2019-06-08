@@ -1,0 +1,3 @@
+Number of LSTM units,Lookback period,Learning rate,Average MSE
+26,11,0.0005,3.433400661020495e-06
+23,26,0.001,3.440874935620343e-06
