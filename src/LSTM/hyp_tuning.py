@@ -102,7 +102,7 @@ avg_mse_list = []
 
 # Choose 15 random pairs of numbers for lstm units, batch size
 
-for k in range(15):
+for k in range(2):
     lstm_units, batch_size = random.randint(10, 50), random.randint(80, 120)
     avg_mse = lstm_model_mse(lstm_units, batch_size, tickers)
     print('Average MSE:', avg_mse)
