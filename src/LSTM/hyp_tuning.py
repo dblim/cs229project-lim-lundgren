@@ -96,7 +96,7 @@ if rand_tuning is True:
     avg_mse_list = []
 
     # Choose 2 random pairs of numbers for lstm units, lookback, dropout rate
-    num_trials = 2
+    num_trials = 15
     for k in range(num_trials):
         lstm_units, lookback, dropout_rate = random.randint(10, 60), random.randint(10, 40), random.uniform(0.1, 0.5)
         avg_mse = lstm_model_mse(lstm_units, lookback, dropout_rate, tickers)
