@@ -12,7 +12,7 @@ data = data.drop(columns=['Unnamed: 0'])
 print(data)
 
 def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
-               epochs: int = 2,
+               epochs: int = 40,
                 batch_size : int =  96,
                learning_rate: float = 0.0001,
                 dropout_rate : float = 0.2,
@@ -89,7 +89,7 @@ def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
     avg_mse = np.array(all_mse)
     return np.mean(avg_mse)
 
-tickers = ['ACN', 'AMAT' ] #     'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT' ,    'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 random.seed()
 
@@ -105,7 +105,7 @@ avg_mse_list = []
 # Choose 4 random pairs of numbers for lstm units, batch size
 
 for k in range(2):
-    lstm_units, lookback = random.randint(10, 100), random.randint(10, 40)
+    lstm_units, lookback = random.randint(10, 60), random.randint(10, 40)
     avg_mse = lstm_model_mse(lstm_units, lookback, tickers)
     print('Average MSE:', avg_mse)
     print('Number of LSTM units:', lstm_units)
@@ -119,4 +119,4 @@ for k in range(2):
 df = pd.DataFrame( list(zip(lstm_units_list, lookback_list, avg_mse_list)), \
                     columns = ['Number of LSTM units', 'Lookback period', 'Average MSE' ])
 random_integer = random.randint(1,100)
-pd.DataFrame(df).to_csv('../output/LSTM_tuning/tuning_'  + str(random_integer) + '_epochs_' +  str(2) +  '.csv', index=False)
+pd.DataFrame(df).to_csv('../output/LSTM_tuning/tuning_'  + str(random_integer) + '_epochs_' +  str(40) +  '.csv', index=False)
