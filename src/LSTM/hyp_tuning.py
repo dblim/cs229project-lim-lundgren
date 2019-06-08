@@ -7,7 +7,7 @@ import pandas as pd
 import random
 from lstm_utils import minutizer, combine_ts, preprocess_2_multi, customized_loss
 
-def lstm_model_mse(lstm_units :int, batch_size : int, dropout_rate : float stocks: list,
+def lstm_model_mse(lstm_units :int, batch_size : int, dropout_rate : float, stocks: list,
                lookback: int = 24,
                epochs: int = 2,
                learning_rate: float = 0.0001,
