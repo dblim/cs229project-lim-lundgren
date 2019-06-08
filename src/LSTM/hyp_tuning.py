@@ -135,7 +135,7 @@ if rand_tuning is True:
     avg_mse_list = []
 
     # Choose 2 random pairs of numbers for lstm units, lookback, dropout rate
-    num_trials = 2
+    num_trials = 5
     for k in range(num_trials):
         lookback  = random.randint(10, 40)
         learning_rate =    np.random.choice([0.1, 0.01, 0.001, 0.0001, 0.5, 0.05, 0.005, 0.0005])
