@@ -67,12 +67,13 @@ def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
     predicted_stock_returns = model.predict(X_val)
 
     all_mse = []
+
+
+
+
     for i, ticker in enumerate(stocks):
-        predcted_returns = np.zeros((int(y_val.shape[0] / amount_of_stocks), 1))
-        actual_returns = np.zeros((int(y_val.shape[0] / amount_of_stocks), 1))
-        for j in range(int(y_val.shape[0] / amount_of_stocks)):
-            predcted_returns[j] = predicted_stock_returns[amount_of_stocks * j + i]
-            actual_returns[j] = y_val[amount_of_stocks * j + i]
+        predcted_returns = predicted_stock_returns[:, i].copy()
+        actual_returns = y_val[:, i].copy()
         #
         MSE = sum((predcted_returns - actual_returns) ** 2) / y_val.shape[0]
         all_mse.append(MSE)
@@ -80,7 +81,7 @@ def lstm_model_mse(lstm_units :int, lookback : int ,  stocks: list,
     avg_mse = np.array(all_mse)
     return np.mean(avg_mse)
 
-tickers = ['ACN', 'AMAT' ,    'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT' ] #    'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 if random is True:
     # Choose 2 random pairs of numbers for lstm units, batch size
