@@ -7,9 +7,7 @@ import pandas as pd
 import random
 from lstm_utils import minutizer, combine_ts, preprocess_2_multi, customized_loss
 
-def
 
-    return X_train, y_train, X_val, v_val
 
 def lstm_model_mse(lstm_units :int, batch_size : int, dropout_rate : float, stocks: list,
                lookback: int = 24,
