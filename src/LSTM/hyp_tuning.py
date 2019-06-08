@@ -89,7 +89,7 @@ def lstm_model_mse(lstm_units :int, batch_size : int, stocks: list,
     avg_mse = np.array(all_mse)
     return np.mean(avg_mse)
 
-tickers = ['ACN', 'AMAT' ,   'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+tickers = ['ACN', 'AMAT' ] #    'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 random.seed()
 
