@@ -20,14 +20,15 @@ def customized_loss(y_pred, y_true):
 
 def lstm_model(stocks: list,
                lookback: int = 24,
-               epochs: int = 50,
+               epochs: int = 40,
                batch_size: int = 96,
                learning_rate: float = 0.0001,
                dropout_rate: float = 0.1,
                ground_features: int = 4,
                percentile: int = 10):
     # Import data
-    data = combine_ts(stocks)
+
+    """
     data = minutizer(data, split=5)
     data, _ = preprocess_2_multi(data, stocks)
 
@@ -48,9 +49,15 @@ def lstm_model(stocks: list,
                 col = j * ground_features + k
                 X[idx, :, k] = data.iloc[i: (i + lookback), col]
             Y[idx] = data.iloc[i + lookback, ground_features * j]
+    """
+    data = combine_ts(stocks)
+    n, d = data.shape
+    amount_of_stocks = int(d / ground_features)
+    train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
 
-
-
+    X = np.load('../data/X_data_lstm.npz.npy')
+    Y = np.load('../data/Y_data_lstm.npz.npy')
+    new_n = X.shape[0]
 
     X_train = X[0: int(new_n * train_val_test_split['train'])]
     y_train = Y[0: int(new_n * train_val_test_split['train'])]
@@ -68,8 +75,8 @@ def lstm_model(stocks: list,
     model.add(LSTM(units=25, return_sequences=True, use_bias=True, input_shape=(lookback, ground_features)))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(units=20, return_sequences=True, use_bias=False))
-    model.add(Dropout(dropout_rate))
+    #model.add(LSTM(units=20, return_sequences=True, use_bias=False))
+    #model.add(Dropout(dropout_rate))
 
     model.add(LSTM(units=20, return_sequences=False, use_bias=False))
     model.add(Dropout(dropout_rate))

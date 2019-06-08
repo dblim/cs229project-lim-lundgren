@@ -1,11 +1,10 @@
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
 import keras.backend as K
-from keras import optimizers, losses
+from keras import optimizers
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-#from utils import minutizer, combine_ts, preprocess_2_multi
 
 
 def preprocess_2_multi(data, tickers: list, ground_features: int = 5, new_features: int = 4):
@@ -24,8 +23,6 @@ def preprocess_2_multi(data, tickers: list, ground_features: int = 5, new_featur
         new_data[:, new_features * i + 3] = \
             (data.iloc[:, ground_features * i + 3] - np.min(data.iloc[:, ground_features * i + 3]))/ \
             (np.max(data.iloc[:, ground_features * i + 3]) - np.min(data.iloc[:, ground_features * i + 3]))  # open prize
-        #new_data[:, new_features * i + 4] = \
-        #    np.sin(2 * np.pi * new_data[:, new_features * i + 3]/np.max(new_data[:, new_features * i + 3]))  # Sin
         open_prices[:, i] = data.iloc[:, ground_features * i + 3]
     header_data = []
     header_open = []
@@ -101,13 +98,20 @@ def lstm_model(stocks: list,
     data = combine_ts(stocks)
     data = minutizer(data, split=5)
     data, _ = preprocess_2_multi(data, stocks)
+    amount_of_stocks = 10
 
     # Transform data
     n, d = data.shape
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
 
-    X = np.zeros((n - lookback, lookback, d))
-    Y = np.zeros((n - lookback, int(d/ground_features)))
+    X = np.zeros((amount_of_stocks, n - lookback, lookback, ground_features))
+    Y = np.zeros((amount_of_stocks, n - lookback, ground_features))
+    for i in range(amount_of_stocks):
+        for j in range(X.shape[0]):
+            for k in range(ground_features):
+                idx = i * ground_features + k
+                X[i, j, :, k] = data.values[i: (i + lookback), ]
+
     for i in range(X.shape[0]):
         for j in range(d):
             X[i, :, j] = data.iloc[i:(i+lookback), j]
@@ -124,6 +128,8 @@ def lstm_model(stocks: list,
     y_test = Y[int(n * train_val_test_split['val']): int(n * train_val_test_split['test'])]
 
     # Initialising the LSTM
+
+
     model = Sequential()
 
     # Adding layers. LSTM(n) --> Dropout(p)
@@ -187,7 +193,7 @@ def lstm_model(stocks: list,
         print('True positive:', TP)
         print('True Negative:', TN)
         print('False positive:', FP)
-        print('False Negative:', FN) 
+        print('False Negative:', FN)
         print('Dummy guess true rate:', max(np.mean(real_zero_one), 1 - np.mean(real_zero_one)))
         accuracy = (TP + TN)/(TP + TN + FP + FN)
         print('Accuracy:', max(accuracy, 1 - accuracy))

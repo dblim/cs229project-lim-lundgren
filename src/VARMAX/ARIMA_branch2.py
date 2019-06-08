@@ -1,19 +1,18 @@
 from statsmodels.tsa.statespace.varmax import VARMAX
-from utils import combine_ts, minutizer, preprocess_2
+from utils import combine_ts, minutizer, preprocess_2_multi
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
 tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
-data = preprocess_2(minutizer(combine_ts(tickers), split=5), tickers)
+data, _ = preprocess_2_multi(minutizer(combine_ts(tickers), split=5), tickers)
 n, _ = data.shape
+
 
 def varmax(tickers,
            p: int = 2,
            q: int = 0,):
-    #data = preprocess_2(minutizer(combine_ts(tickers), split=5), tickers)
-    #n, _ = data.shape
 
     # Split data
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
@@ -42,9 +41,9 @@ def varmax(tickers,
     # Validate
     predictions_val = model_fit.forecast(steps=exog_x_val.shape[0], exog=exog_x_val.values)
     MSE = 0
-    for i in range(endog_y_val.shape[0]):
-        for j in range(endog_y_val.shape[1]):
-            MSE += (endog_y_val.values[i, j] - float(predictions_val[i][j]))**2
+    #for i in range(endog_y_val.shape[0]):
+    #    for j in range(endog_y_val.shape[1]):
+    #        MSE += (endog_y_val.values[i, j] - float(predictions_val[i][j]))**2
     print('p:', p, ' MSE:', MSE)
 
     # Test -- this is just here for simplcity!!
@@ -53,15 +52,15 @@ def varmax(tickers,
     for i, ticker in enumerate(tickers):
         real_val = endog_y_val.values[:, i]
         pred_val = predictions_val[:, i]
-        pd.DataFrame(real_val).to_csv('../output/VARMAX_results/predictions/val_files/'+ticker+'_val_predictions.csv',
+        pd.DataFrame(real_val).to_csv('../output/VARMAX_results/val_files/'+ticker+'_val_predictions.csv',
                                       index=False)
-        pd.DataFrame(pred_val).to_csv('../output/VARMAX_results/predictions/val_files/' + ticker + '_val_real.csv',
+        pd.DataFrame(pred_val).to_csv('../output/VARMAX_results/val_files/' + ticker + '_val_real.csv',
                                       index=False)
         real_test = endog_y_test.values[:, i]
         pred_test = predictions_test[:, i]
-        pd.DataFrame(real_test).to_csv('../output/VARMAX_results/predictions/test_files/' + ticker + '_test_predictions.csv',
+        pd.DataFrame(real_test).to_csv('../output/VARMAX_results/test_files/' + ticker + '_test_predictions.csv',
                                        index=False)
-        pd.DataFrame(pred_test).to_csv('../output/VARMAX_results/predictions/test_files/' + ticker + '_test_real.csv',
+        pd.DataFrame(pred_test).to_csv('../output/VARMAX_results/test_files/' + ticker + '_test_real.csv',
                                        index=False)
 
     # Evaluate
@@ -104,6 +103,4 @@ def varmax(tickers,
             plt.savefig('../output/VARMAX_results/VARMAX_test_' + ticker + '.png')
             plt.close()
 
-
-for i in range(3, 6):
-    varmax(tickers, q=i)
+varmax(tickers, p=1, q=2)
