@@ -1,4 +1,4 @@
-from var_utils import combine_ts_returns, minutizer
+from var_utils import combine_ts, minutizer, preprocess_2_multi
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,7 +11,7 @@ justin_data : bool=True
 # data
 if justin_data is True:
     path = '../data/sectors/Information Technology/'
-    tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
+    tickers = ['ACN', 'AMAT']# 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 if justin_data is False:
     path = '../data/top_stocks/'
@@ -26,6 +26,7 @@ for i in range(10):
     new_data[:, i] = data.values[:, 4*i]
 
 data = pd.DataFrame(new_data)
+
 
 
 # Split data
@@ -57,46 +58,31 @@ test_num_steps = len(endog_y_test)
 num_stocks = len(tickers)
 
 #Model
-results = VAR(endog_y).fit(1)
-#print(results.params)
+model = VAR(endog_y)
+results = model.fit(1)
 
 
-# Predictions on test
+# Convert params to np.array
+params = results.params.values
 
-predictions_test = np.zeros(( test_data.shape[0] ,test_data.shape[1]    ))
+# Convert test data to numpy array and at first column of bias
+bias = np.ones(len(test_data)).reshape(len(test_data),1)
 
-for i in range(0,test_num_steps):
+test_data = test_data.values
+test_data = np.c_[bias, test_data]
+# print(test_data[:,0]) - This here to check we have really added bias.
 
-    predictions_test[i] = results.forecast(test_data.values[i,:].reshape(1,test_data.shape[1]),steps = 1)
-print(predictions_test)
+# Prediction. Note we always start at 1 time step into test set rather than at the 0th.
+test_predictions = np.zeros(( len(test_data), 10))
 
-# Save predictions
-pd.DataFrame(predictions_test).to_csv('../output/VAR_results/test_predictions.csv',
-                                       index=False)
+for i in range(1, len(test_data)):
+    test_predictions[i,:] =np.dot( test_data[i,: ].reshape(1,11), params)
 
+# Compare to LSTM. Detele first 24 columns
+test_predictions = test_predictions[ 24: , : ]
 
-# Hyperparameter tuning
-# We get an optimal hyperparameter of p=1
-# This is probably wrong
-def var_mse_p(endog_y, p):
-    results = VAR(endog_y).fit(p)
-    predictions = results.forecast(endog_y.values, steps=val_num_steps)
-    pd.DataFrame(predictions).to_csv('../output/VAR_results/' + str(p) + '_train_prediction.csv')
-    MSE = np.sum(predictions - endog_y_val.values, axis=0) ** 2 / val_num_steps
-    MSE_average = np.sum(MSE) / num_stocks
-    return (MSE_average)
-
-
-# We now get the smallest MSE over all p in range (1, max_p)
-def optimal_p(endog_y, max_p):
-    p_list = ['{}'.format(p) for p in range(1, max_p)]
-    MSE_list = [var_mse_p(endog_y, p) for p in range(1, max_p)]
-    MSE_dictionary = dict(zip(p_list, MSE_list))
-    return min(MSE_dictionary, key=MSE_dictionary.get)
-
-
-# Try max_p = 10, maximum hyperparameter to search. We get p = 1.
-def hyperparameter_search(endog_y, max_p):
-    return (optimal_p(endog_y, max_p))
+# Save to pandas dataframe. This is test predictions 24 time steps into LSTM.
+df = pd.DataFrame(test_predictions)
+df.to_csv('../output/VAR_results/VAR_test_predictions.csv')
 
 
