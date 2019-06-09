@@ -9,7 +9,7 @@ tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', '
 LSTM_partial: bool = True
 VAR: bool = False
 VARMAX: bool = False
-R2N2:bool = True
+R2N2: bool = True
 
 pred_path = '../output/LSTM_results/test_results/partial_all_stocks_pred.csv'
 real_path = '../output/LSTM_results/test_results/partial_all_stocks_real.csv'
@@ -145,4 +145,50 @@ if VAR is True:
     print(var_data)
 
 if R2N2 is True:
-    pass
+    threshold = 0
+    R2N2_path = '../output/R2N2_results/test_all_stocks_pred.csv'
+    R2N2_data = pd.read_csv(R2N2_path).values
+
+    strategy_returns = np.zeros(real.shape)
+
+    for i in range(strategy_returns.shape[0]):
+        for j in range(strategy_returns.shape[1]):
+            if R2N2_data[i, j] > threshold:
+                strategy_returns[i, j] = real[i, j]
+            else:
+                strategy_returns[i, j] = -real[i, j]
+    strategy_returns = np.mean(strategy_returns, axis=1)
+
+    strat_return_total = 1
+    for i in range(strategy_returns.shape[0]):
+        strat_return_total *= (strategy_returns[i] + 1)
+
+
+
+    sns.set(color_codes=True)
+    sns.distplot(real.reshape(real.shape[0]*real.shape[1], 1), kde=True, hist=True, bins=200, label='Actual returns', hist_kws={'edgecolor': 'black'},
+                 kde_kws={"lw": 0})
+    sns.distplot(R2N2_data.reshape(real.shape[0]*real.shape[1], 1), kde=True, hist=True, bins=100, label='Predicted returns', hist_kws={'edgecolor': 'black'},
+                 kde_kws={"lw": 0})
+    plt.axis([-0.0125, 0.0125, 0, 275])
+    plt.title('R2N2')
+    plt.xlabel('Returns')
+    plt.ylabel('Density')
+    plt.legend()
+    plt.savefig('../output/R2N2_density.png')
+    plt.show()
+    # plt.close()
+
+    MSE = sum((R2N2_data.reshape(int(pred.shape[0] * pred.shape[1]), 1) -
+               real.reshape(int(real.shape[0] * real.shape[1]), 1)) ** 2) / int(pred.shape[0] * pred.shape[1])
+
+    #real_zero_one = real.reshape(real.shape[0] * real.shape[1], 1)
+    pred_zero_one = R2N2_data.reshape(real.shape[0] * real.shape[1], 1)
+    pred_zero_one[pred_zero_one > 0] = 1
+    pred_zero_one[pred_zero_one < 0] = 0
+
+    print('=====')
+    print('R2N2 MSE:', MSE)
+    print('R2N2 Accuracy:', 1 - zero_one_loss(real_zero_one, pred_zero_one))
+    print('R2N2 return:', (strat_return_total - 1) * 100)
+    print('R2N3 SR:', np.mean(strategy_returns) / np.std(strategy_returns))
