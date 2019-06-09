@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 # Appends returns column to dataframe
 
@@ -32,3 +33,22 @@ def combine_ts_returns(path : str, tickers : list ):
         data = pd.concat([data, new_data], axis=1, sort=True)
     tickers.append(stock0)
     return data.interpolate()[1 : data.shape[0]]
+
+def minutizer(data, split: int = 5, ground_features: int = 5):
+    n, d = data.shape
+    new_data = pd.DataFrame(np.zeros((int(n/split) - 1, d)), columns=list(data))
+    for i in range(int(n/split) - 1):
+        for j in range(int(d/ground_features)):
+            # Close
+            new_data.iloc[i, j * ground_features] = data.iloc[split * (i + 1), j * ground_features]
+            # High
+            new_data.iloc[i, j * ground_features + 1] = max([data.iloc[split*i+k, j * ground_features + 1]
+                                                             for k in range(split)])
+            # Low
+            new_data.iloc[i, j * ground_features + 2] = min([data.iloc[split * i + k, j * ground_features + 2]
+                                                             for k in range(split)])
+            # Open
+            new_data.iloc[i, j * ground_features + 3] = data.iloc[split*i, j * ground_features + 3]
+            # Volume
+            new_data.iloc[i, j * ground_features + 4] = np.sum(data.iloc[i*split:(i+1)*split, j * ground_features + 4])
+    return new_data
