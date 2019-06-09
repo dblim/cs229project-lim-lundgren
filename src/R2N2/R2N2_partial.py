@@ -25,7 +25,7 @@ def lstm_model(stocks: list,
                output_dim_individual_layer: int = 1,  # HP
                output_dim_combined_layer: int = 10,  # = amount of stocks
                dropout_rate: float = 0.1,  # HP
-               ground_features: int = 4,  # this could be changed but let's keep it this way..
+               ground_features: int = 2,  # this could be changed but let's keep it this way..
                percentile: int = 10):  # just for checking
     # Import data the file '../data/preprocessed_time_series_data.csv' has everything already preprocessed
     """
@@ -37,20 +37,25 @@ def lstm_model(stocks: list,
 
     data = pd.read_csv('../data/preprocessed_time_series_data.csv')
     data = data.drop(columns=['Unnamed: 0'])
+
     train_res = pd.read_csv('../output/VARMAX_results/residual_data_train.csv')
     train_res = train_res.drop(columns=['Unnamed: 0'])
-    val_res = pd.read_csv('../output/VARMAX_results/residual_data_val.csv')
-    val_res = train_res.drop(columns=['Unnamed: 0'])
-    test_res = pd.test_res('../output/VARMAX_results/residual_data_test.csv')
-    test_res = test_res.drop(columns=['Unnamed: 0'])
-    print(train_res)
-    print(data.shape)
 
-    data_y = np.zeros((data.shape[0], 10))
+    val_res = pd.read_csv('../output/VARMAX_results/residual_data_val.csv')
+    val_res = val_res.drop(columns=['Unnamed: 0'])
+
+    test_res = pd.read_csv('../output/VARMAX_results/residual_data_test.csv')
+    test_res = test_res.drop(columns=['Unnamed: 0'])
+
+    residual_data = np.concatenate((train_res.values, val_res.values, test_res.values), axis=0)
+
+    data_y = np.zeros((data.shape[0], 20))
     for i in range(10):
-        data_y[:, i] = data.values[:, 4 * i]
+        data_y[:, 2*i] = data.values[:, 4 * i]
+        data_y[:, 2*i + 1] = residual_data[:, i]
+
     # Transform data
-    n, d = data.shape
+    n, d = data_y.shape
     train_val_test_split = {'train': 0.7, 'val': 0.85, 'test': 1}
 
     X = np.zeros((amount_of_stocks, n - lookback, lookback, ground_features))
@@ -59,8 +64,8 @@ def lstm_model(stocks: list,
         for j in range(X.shape[1]):
             for k in range(ground_features):
                 idx = i * ground_features + k
-                X[i, j, :, k] = data.values[j: (j + lookback), idx]
-            Y[j, i] = data.values[j + lookback, i * ground_features]
+                X[i, j, :, k] = data_y[j: (j + lookback), idx]
+            Y[j, i] = data_y[j + lookback, i * ground_features]
 
     X_train = X[:, 0: int(n * train_val_test_split['train'])]
     y_train = Y[0: int(n * train_val_test_split['train'])]
@@ -138,15 +143,15 @@ def lstm_model(stocks: list,
     predicted_stock_returns_test = full_model.predict([X_test[i] for i in range(amount_of_stocks)])
 
     # Save
-    pd.DataFrame(predicted_stock_returns_val).to_csv('../output/LSTM_results/valid_results/partial_all_stocks_pred.csv', index=False)
-    pd.DataFrame(y_val).to_csv('../output/LSTM_results/valid_results/partial_all_stocks_real.csv', index=False)
-    pd.DataFrame(predicted_stock_returns_test).to_csv('../output/LSTM_results/test_results/partial_all_stocks_pred.csv', index=False)
-    pd.DataFrame(y_test).to_csv('../output/LSTM_results/test_results/partial_all_stocks_real.csv', index=False)
+    pd.DataFrame(predicted_stock_returns_val).to_csv('../output/R2N2_results/val_all_stocks_pred.csv', index=False)
+    pd.DataFrame(y_val).to_csv('../output/R2N2_results/val_all_stocks_real.csv', index=False)
+    pd.DataFrame(predicted_stock_returns_test).to_csv('../output/R2N2_results/test_all_stocks_pred.csv', index=False)
+    pd.DataFrame(y_test).to_csv('../output/R2N2_results/test_all_stocks_real.csv', index=False)
 
     plt.plot(history.history['loss'], label='Training loss')
     plt.plot(history.history['val_loss'], label='Validation loss loss')
     plt.legend()
-    plt.savefig('../output/LSTM_results/partial_LSTM_loss.png')
+    plt.savefig('../output/R2N2_results/partial_LSTM_loss.png')
     plt.close()
 
 
