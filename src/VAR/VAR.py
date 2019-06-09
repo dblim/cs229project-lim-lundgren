@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.api import VAR
 
 """In this script, we will get the training residuals for VAR. These will then be trained on using RNN/LSTM"""
-
+transpose : bool = True
 justin_data : bool=True
 
 # data
@@ -63,13 +63,21 @@ results = model.fit(1)
 
 
 # Convert params to np.array
+
 params = results.params.values
+bias = params[0,:].reshape(1,10)
+
+weights = np.delete(params, (0), axis = 0)
+weights = weights.T
+params = np.r_[bias, weights ]
+
+
 
 # Convert test data to numpy array and at first column of bias
-bias = np.ones(len(test_data)).reshape(len(test_data),1)
+bias_vector = np.ones(len(test_data)).reshape(len(test_data),1)
 
 test_data = test_data.values
-test_data = np.c_[bias, test_data]
+test_data = np.c_[bias_vector, test_data]
 # print(test_data[:,0]) - This here to check we have really added bias.
 
 # Prediction. Note we always start at 1 time step into test set rather than at the 0th.
@@ -80,6 +88,7 @@ for i in range(1, len(test_data)):
 
 # Compare to LSTM. Detele first 24 columns
 test_predictions = test_predictions[ 24: , : ]
+print(test_predictions)
 
 # Save to pandas dataframe. This is test predictions 24 time steps into LSTM.
 df = pd.DataFrame(test_predictions)
