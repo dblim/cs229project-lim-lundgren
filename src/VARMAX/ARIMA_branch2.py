@@ -6,7 +6,11 @@ import matplotlib.pyplot as plt
 
 tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
-data, _ = preprocess_2_multi(minutizer(combine_ts(tickers), split=5), tickers)
+#data, _ = preprocess_2_multi(minutizer(combine_ts(tickers), split=5), tickers)
+
+data = pd.read_csv('../data/preprocessed_time_series_data.csv')
+data = data.drop(columns=['Unnamed: 0'])
+new_data = np.zeros((data.shape[0], 10))
 n, _ = data.shape
 
 
@@ -49,19 +53,28 @@ def varmax(tickers,
     # Test -- this is just here for simplcity!!
     predictions_test = model_fit.forecast(steps=exog_x_test.shape[0], exog=exog_x_test.values)
 
-    for i, ticker in enumerate(tickers):
-        real_val = endog_y_val.values[:, i]
-        pred_val = predictions_val[:, i]
-        pd.DataFrame(real_val).to_csv('../output/VARMAX_results/val_files/'+ticker+'_val_predictions.csv',
-                                      index=False)
-        pd.DataFrame(pred_val).to_csv('../output/VARMAX_results/val_files/' + ticker + '_val_real.csv',
-                                      index=False)
-        real_test = endog_y_test.values[:, i]
-        pred_test = predictions_test[:, i]
-        pd.DataFrame(real_test).to_csv('../output/VARMAX_results/test_files/' + ticker + '_test_predictions.csv',
-                                       index=False)
-        pd.DataFrame(pred_test).to_csv('../output/VARMAX_results/test_files/' + ticker + '_test_real.csv',
-                                       index=False)
+    train_residuals = model_fit.resid
+    pd.DataFrame(train_residuals).to_csv('../output/VARMAX_results/residual_data_train.csv')
+    val_residual = endog_y_val.values - predictions_val
+    pd.DataFrame(val_residual).to_csv('../output/VARMAX_results/residual_data_val.csv')
+    test_residual = endog_y_test.values - predictions_test
+    pd.DataFrame(test_residual).to_csv('../output/VARMAX_results/residual_data_test.csv')
+
+    q: bool = False
+    if q is True:
+        for i, ticker in enumerate(tickers):
+            real_val = endog_y_val.values[:, i]
+            pred_val = predictions_val[:, i]
+            pd.DataFrame(real_val).to_csv('../output/VARMAX_results/val_files/'+ticker+'_val_predictions.csv',
+                                          index=False)
+            pd.DataFrame(pred_val).to_csv('../output/VARMAX_results/val_files/' + ticker + '_val_real.csv',
+                                          index=False)
+            real_test = endog_y_test.values[:, i]
+            pred_test = predictions_test[:, i]
+            pd.DataFrame(real_test).to_csv('../output/VARMAX_results/test_files/' + ticker + '_test_predictions.csv',
+                                           index=False)
+            pd.DataFrame(pred_test).to_csv('../output/VARMAX_results/test_files/' + ticker + '_test_real.csv',
+                                           index=False)
 
     # Evaluate
     pic: bool = False

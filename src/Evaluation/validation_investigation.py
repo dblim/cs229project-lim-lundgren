@@ -1,10 +1,13 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from sklearn.metrics import zero_one_loss
+import seaborn as sns
 
 tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
-LSTM: bool = True
+LSTM_partial: bool = True
+LSTM_multi: bool = True
 VARMAX: bool = True
 
 pred_path = '../output/LSTM_results/test_results/partial_all_stocks_pred.csv'
@@ -12,30 +15,64 @@ real_path = '../output/LSTM_results/test_results/partial_all_stocks_real.csv'
 
 pred = pd.read_csv(pred_path).values
 real = pd.read_csv(real_path).values
-if LSTM is True:
+
+if LSTM_partial is True:
     pred_ret = pred[:, 0]
     real_ret = real[:, 0]
-    corr = np.corrcoef(real_ret, pred_ret)[0][1]
+    threshold = 0
+
+    strategy_returns = np.zeros(real.shape)
+    for i in range(strategy_returns.shape[0]):
+        for j in range(strategy_returns.shape[1]):
+            if pred[i, j] > threshold:
+                strategy_returns[i, j] = real[i, j]
+            else:
+                strategy_returns[i, j] = -real[i, j]
+    strategy_returns = np.mean(strategy_returns, axis=1)
+    dummy_returns = np.mean(real, axis=1)
+    strat_return_total = 1
+    acc_dummy_return = 1
+    for i in range(strategy_returns.shape[0]):
+        strat_return_total *= (strategy_returns[i] + 1)
+        acc_dummy_return *= (dummy_returns[i] + 1)
     for i in range(1, 10):
-        #print(abs(np.corrcoef(pred[:, i], real[:, i])[0][1]))
         pred_ret = np.concatenate((pred_ret, pred[:, i]), axis=0)
         real_ret = np.concatenate((real_ret, real[:, i]), axis=0)
-        corr += abs(np.corrcoef(real_ret, pred_ret)[0][1])
-
-    plt.hist(real_ret, bins=200, density=True, label='real')
-    plt.hist(pred_ret, bins=200, density=True, label='pred', alpha=0.75)
-    plt.axis([-0.01, 0.01, 0, 700])
+    sns.set(color_codes=True)
+    sns.distplot(real_ret, kde=True, hist=True, bins=200, label='Actual returns', hist_kws={'edgecolor':'black'},
+                 kde_kws={"lw": 0})
+    sns.distplot(pred_ret, kde=True, hist=True, bins=100, label='Predicted returns', hist_kws={'edgecolor':'black'},
+                 kde_kws={"lw": 0})
+    plt.axis([-0.0125, 0.0125, 0, 275])
     plt.title('LSTM')
     plt.xlabel('Returns')
     plt.ylabel('Density')
     plt.legend()
+    plt.savefig('../output/LSTM_density.png')
     plt.show()
+    #plt.close()
 
     MSE = sum((pred.reshape(int(pred.shape[0]*pred.shape[1]), 1) -
                real.reshape(int(real.shape[0]*real.shape[1]), 1))**2)/int(pred.shape[0]*pred.shape[1])
 
+    real_zero_one = real.reshape(real.shape[0] * real.shape[1], 1)
+    pred_zero_one = pred.reshape(real.shape[0] * real.shape[1], 1)
+    real_zero_one[real_zero_one > 0] = 1
+    real_zero_one[real_zero_one < 0] = 0
+
+    pred_zero_one[pred_zero_one > 0] = 1
+    pred_zero_one[pred_zero_one < 0] = 0
+
+    print('Dummy MSE:', sum(sum(real**2))/(real.shape[0]*real.shape[1]))
+    print('Dummy Accuracy:', np.mean(real_zero_one))
+    print('Dummy return:', (acc_dummy_return - 1) * 100)
+    print('Dummy SR:', np.mean(dummy_returns) / np.std(dummy_returns))
+    print('=====')
+
     print('LSTM MSE:', MSE)
-    print('LSTM correlation:', corr/10)
+    print('LSTM Accuracy:', 1 - zero_one_loss(real_zero_one, pred_zero_one))
+    print('LSTM return:', (strat_return_total - 1) * 100)
+    print('LSTM SR:', np.mean(strategy_returns)/np.std(strategy_returns))
 
     inc: bool = False
     if inc is True:
@@ -50,29 +87,53 @@ if LSTM is True:
 
 
 if VARMAX is True:
-    val_path1 = '../output/VARMAX_results/val_files/'
-    val_path_pred = '_val_predictions.csv'
-    pred_returns = np.zeros((0, 1))
-    corr = 0
+    VARMAX_threshold = 0
+    val_path1 = '../output/VARMAX_results/test_files/'
+    ## Name below is REAL becuase I accidentaly named the predictions real and the real ones predictions in the ARIMA file
+    val_path_pred = '_test_real.csv' # real = pred... mistake in ARIMA file
+    pred_returns = np.zeros(real.shape)
     for i, ticker in enumerate(tickers):
         path = val_path1 + ticker + val_path_pred
         preds = pd.read_csv(path).values
+        # Remove the first lookback points in order to give a fair comparison (i.e. same size of arrays)
         preds = preds[preds.shape[0]-pred.shape[0]: preds.shape[0]]
-        pred_returns = np.concatenate((pred_returns, preds))
-        corr += abs(np.corrcoef(preds.T, real[:, i].reshape(1265, 1).T)[0][1])
-    plt.hist(real.reshape(int(real.shape[0]*real.shape[1]), 1), bins=200, density=True, label='real')
-    plt.hist(pred_returns, bins=200, density=True, label='pred', alpha=0.75)
+        pred_returns[:, i] = preds.reshape(pred.shape[0], )
+
+    sns.set(color_codes=True)
+    sns.distplot(real.reshape(int(real.shape[0]*real.shape[1]), 1), kde=True, hist=True, bins=200,
+                 label='Actual returns', hist_kws={'edgecolor': 'black'}, kde_kws={"lw": 0})
+    sns.distplot(pred_returns.reshape(int(real.shape[0]*real.shape[1]), 1), kde=True, hist=True, bins=100,
+                 label='Predicted returns', hist_kws={'edgecolor': 'black'}, kde_kws={"lw": 0})
+    plt.axis([-0.0125, 0.0125, 0, 500])
     plt.title('VARMAX')
     plt.xlabel('Returns')
     plt.ylabel('Density')
-    plt.axis([-0.01, 0.01, 0, 700])
     plt.legend()
+    plt.savefig('../output/VARMAX_density.png')
     plt.show()
 
     # Metrics
+    # MSE
+    MSE = sum(sum((pred_returns - real)**2))/(real.shape[0] * real[1])
+    # accuracy
+    VARMAX_zero_one = pred_returns.reshape(int(real.shape[0]*real.shape[1]), 1)
+    VARMAX_zero_one[VARMAX_zero_one > 0] = 1
+    VARMAX_zero_one[VARMAX_zero_one < 0] = 0
+    # returns
+    VARMAX_strategy_returns = np.zeros(real.shape)
+    for i in range(real.shape[0]):
+        for j in range(real.shape[1]):
+            if pred_returns[i, j] > VARMAX_threshold:
+                VARMAX_strategy_returns[i, j] = real[i, j]
+            else:
+                VARMAX_strategy_returns[i, j] = -real[i, j]
+    VARMAX_strategy_returns = np.mean(VARMAX_strategy_returns, axis=1)
+    VARMAX_strategy_ret_total = 1
+    for i in range(VARMAX_strategy_returns.shape[0]):
+        VARMAX_strategy_ret_total *= (1 + VARMAX_strategy_returns[i])
 
-    MSE = sum((real.reshape(int(real.shape[0]*real.shape[1]), 1) - pred_returns)**2)/pred_returns.shape[0]
+    print('=====')
     print('VARMAX MSE:', MSE)
-    print(corr/10)
-
-
+    print('VARMAX Accuracy:', 1 - zero_one_loss(real_zero_one, VARMAX_zero_one))
+    print('VARMAX return:', (VARMAX_strategy_ret_total - 1) * 100)
+    print('VARMAX SR:', np.mean(VARMAX_strategy_returns)/np.std(VARMAX_strategy_returns))
