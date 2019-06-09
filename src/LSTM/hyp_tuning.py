@@ -7,7 +7,7 @@ import pandas as pd
 import random
 from lstm_utils import minutizer, combine_ts, preprocess_2_multi, customized_loss
 
-rand_tuning : bool = True
+rand_tuning : bool = False
 det_tuning : bool = False
 
 data = pd.read_csv('../data/preprocessed_time_series_data.csv')
@@ -175,5 +175,9 @@ if det_tuning is True:
                             index=False)
 
 
+lookback = 24
+learning_rate = 1e-4
+output_dim_individual_layer = 1
+print(avg_mse = lstm_model_mse( lookback, learning_rate, output_dim_individual_layer, tickers))
 
 
