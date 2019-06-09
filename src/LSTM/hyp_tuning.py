@@ -178,6 +178,6 @@ if det_tuning is True:
 lookback = 24
 learning_rate = 1e-4
 output_dim_individual_layer = 1
-print(avg_mse = lstm_model_mse( lookback, learning_rate, output_dim_individual_layer, tickers))
+print( lstm_model_mse( lookback, learning_rate, output_dim_individual_layer, tickers))
 
 
