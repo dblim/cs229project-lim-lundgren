@@ -6,9 +6,9 @@ import seaborn as sns
 
 tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
-LSTM_partial: bool = True
-LSTM_multi: bool = True
-VARMAX: bool = True
+LSTM_partial: bool = False
+VAR: bool = True
+VARMAX: bool = False
 
 pred_path = '../output/LSTM_results/test_results/partial_all_stocks_pred.csv'
 real_path = '../output/LSTM_results/test_results/partial_all_stocks_real.csv'
@@ -137,3 +137,8 @@ if VARMAX is True:
     print('VARMAX Accuracy:', 1 - zero_one_loss(real_zero_one, VARMAX_zero_one))
     print('VARMAX return:', (VARMAX_strategy_ret_total - 1) * 100)
     print('VARMAX SR:', np.mean(VARMAX_strategy_returns)/np.std(VARMAX_strategy_returns))
+
+if VAR is True:
+    var_test_path = '../output/VAR_results/test_predictions.csv'
+    var_data = pd.read_csv(var_test_path)
+    print(var_data)
