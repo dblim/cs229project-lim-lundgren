@@ -2,6 +2,6 @@
 
 # Title:
 
-Joint with Justin Lundgren and Pablo Solis. 
+Joint with Justin Lundgren.
 
 
