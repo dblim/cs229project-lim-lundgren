@@ -6,9 +6,10 @@ import seaborn as sns
 
 tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
-LSTM_partial: bool = False
-VAR: bool = True
+LSTM_partial: bool = True
+VAR: bool = False
 VARMAX: bool = False
+R2N2:bool = True
 
 pred_path = '../output/LSTM_results/test_results/partial_all_stocks_pred.csv'
 real_path = '../output/LSTM_results/test_results/partial_all_stocks_real.csv'
@@ -142,3 +143,6 @@ if VAR is True:
     var_test_path = '../output/VAR_results/test_predictions.csv'
     var_data = pd.read_csv(var_test_path)
     print(var_data)
+
+if R2N2 is True:
+    pass
