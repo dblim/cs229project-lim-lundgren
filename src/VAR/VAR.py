@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.api import VAR
 
 """In this script, we will get the training residuals for VAR. These will then be trained on using RNN/LSTM"""
-transpose : bool = True
+transpose : bool = False
 justin_data : bool=True
 
 # data
@@ -65,11 +65,14 @@ results = model.fit(1)
 # Convert params to np.array
 
 params = results.params.values
-bias = params[0,:].reshape(1,10)
 
-weights = np.delete(params, (0), axis = 0)
-weights = weights.T
-params = np.r_[bias, weights ]
+# This stuff here because I don't understand if statsmodels API returns the transpose of the parameters that we want
+if transpose is True:
+    bias = params[0,:].reshape(1,10)
+
+    weights = np.delete(params, (0), axis = 0)
+    weights = weights.T
+    params = np.r_[bias, weights ]
 
 
 
