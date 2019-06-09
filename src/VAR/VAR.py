@@ -56,16 +56,19 @@ val_num_steps = len(endog_y_val)
 test_num_steps = len(endog_y_test)
 num_stocks = len(tickers)
 
-
-
 #Model
 results = VAR(endog_y).fit(1)
+#print(results.params)
 
-# Predictions on validation
-predictions_val = results.forecast(val_data.values,   steps = val_num_steps)
 
 # Predictions on test
-predictions_test = results.forecast(test_data.values, steps = test_num_steps)
+
+predictions_test = np.zeros(( test_data.shape[0] ,test_data.shape[1]    ))
+
+for i in range(0,test_num_steps):
+
+    predictions_test[i] = results.forecast(test_data.values[i,:].reshape(1,test_data.shape[1]),steps = 1)
+print(predictions_test)
 
 # Save predictions
 pd.DataFrame(predictions_test).to_csv('../output/VAR_results/test_predictions.csv',
