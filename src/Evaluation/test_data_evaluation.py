@@ -9,10 +9,10 @@ tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', '
 LSTM_partial: bool = True
 VAR: bool = False
 VARMAX: bool = False
-R2N2: bool = True
+R2N2: bool = False
 
-pred_path = '../output/LSTM_results/test_results/partial_all_stocks_pred.csv'
-real_path = '../output/LSTM_results/test_results/partial_all_stocks_real.csv'
+pred_path = '../output/LSTM_results/valid_results/partial_all_stocks_pred.csv'
+real_path = '../output/LSTM_results/valid_results/partial_all_stocks_real.csv'
 
 pred = pd.read_csv(pred_path).values
 real = pd.read_csv(real_path).values
@@ -141,8 +141,54 @@ if VARMAX is True:
 
 if VAR is True:
     var_test_path = '../output/VAR_results/test_predictions.csv'
-    var_data = pd.read_csv(var_test_path)
-    print(var_data)
+    var_data = pd.read_csv(var_test_path).values
+    var_data = var_data[24: var_data.shape[0]]
+
+    threshold = 0
+
+    strategy_returns = np.zeros(real.shape)
+
+    for i in range(strategy_returns.shape[0]):
+        for j in range(strategy_returns.shape[1]):
+            if var_data[i, j] > threshold:
+                strategy_returns[i, j] = real[i, j]
+            else:
+                strategy_returns[i, j] = -real[i, j]
+    strategy_returns = np.mean(strategy_returns, axis=1)
+
+    strat_return_total = 1
+    for i in range(strategy_returns.shape[0]):
+        strat_return_total *= (strategy_returns[i] + 1)
+
+    sns.set(color_codes=True)
+    sns.distplot(real.reshape(real.shape[0] * real.shape[1], 1), kde=True, hist=True, bins=200, label='Actual returns',
+                 hist_kws={'edgecolor': 'black'},
+                 kde_kws={"lw": 0})
+    sns.distplot(var_data.flatten(), kde=True, hist=True, bins=100,
+                 label='Predicted returns', hist_kws={'edgecolor': 'black'},
+                 kde_kws={"lw": 0})
+    plt.axis([-0.0125, 0.0125, 0, 5000])
+    plt.title('VAR')
+    plt.xlabel('Returns')
+    plt.ylabel('Density')
+    plt.legend()
+    plt.savefig('../output/VAR_density.png')
+    plt.show()
+    # plt.close()
+
+    MSE = sum(sum((var_data.reshape(var_data.shape[0]*var_data.shape[1], 1) -
+                   real.reshape(real.shape[0]*real.shape[1], 1))**2))/ int(pred.shape[0] * pred.shape[1])
+
+    pred_zero_one = var_data.flatten()
+    pred_zero_one[pred_zero_one > 0] = 1
+    pred_zero_one[pred_zero_one < 0] = 0
+
+    print('=====')
+    print('VAR MSE:', MSE)
+    print('VAR Accuracy:', 1 - zero_one_loss(real_zero_one, pred_zero_one))
+    print('VAR return:', (strat_return_total - 1) * 100)
+    print('VAR SR:', np.mean(strategy_returns) / np.std(strategy_returns))
+
 
 if R2N2 is True:
     threshold = 0
@@ -170,7 +216,7 @@ if R2N2 is True:
                  kde_kws={"lw": 0})
     sns.distplot(R2N2_data.reshape(real.shape[0]*real.shape[1], 1), kde=True, hist=True, bins=100, label='Predicted returns', hist_kws={'edgecolor': 'black'},
                  kde_kws={"lw": 0})
-    plt.axis([-0.0125, 0.0125, 0, 275])
+    plt.axis([-0.0125, 0.0125, 0, 5000])
     plt.title('R2N2')
     plt.xlabel('Returns')
     plt.ylabel('Density')
