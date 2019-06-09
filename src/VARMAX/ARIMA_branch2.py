@@ -40,10 +40,10 @@ def varmax(tickers,
     exog_x_test = test_data.drop(columns=y_list)
 
     # Fit model
-    model = VARMAX(endog=endog_y.values, exog=exog_x.values, order=(p, q))
-    model_fit = model.fit(disp=False, order=(p, q), maxiter=200, method='nm')
+    model = VARMAX(endog=endog_y.values, order=(1,0))#exog=exog_x.values, order=(p, q))
+    model_fit = model.fit(disp=False, order=(1, 0), maxiter=200, method='nm')
     # Validate
-    predictions_val = model_fit.forecast(steps=exog_x_val.shape[0], exog=exog_x_val.values)
+    predictions_val = model_fit.forecast(steps=exog_x_val.shape[0], exog=None)#exog=exog_x_val.values)
     MSE = 0
     #for i in range(endog_y_val.shape[0]):
     #    for j in range(endog_y_val.shape[1]):
@@ -51,7 +51,7 @@ def varmax(tickers,
     print('p:', p, ' MSE:', MSE)
 
     # Test -- this is just here for simplcity!!
-    predictions_test = model_fit.forecast(steps=exog_x_test.shape[0], exog=exog_x_test.values)
+    predictions_test = model_fit.forecast(steps=exog_x_test.shape[0], exog=None)#exog=exog_x_test.values)
 
     train_residuals = model_fit.resid
     pd.DataFrame(train_residuals).to_csv('../output/VARMAX_results/residual_data_train.csv')
