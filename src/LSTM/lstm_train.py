@@ -1,8 +1,4 @@
-from LSTM.lstm_multi import lstm_model
-from sklearn.metrics import zero_one_loss
-from pandas import read_csv
-import numpy as np
-
+from trash.lstm_multi import lstm_model
 
 """
 tickers = ['AAPL', 'ACN', 'ADBE', 'ADI', 'ADP', 'ADS', 'ADSK', 'AKAM', 'AMAT', 'AMD', 'ANSS', 'APH', 'AVGO', 'CDNS',
