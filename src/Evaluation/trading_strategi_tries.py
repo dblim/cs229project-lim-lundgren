@@ -77,9 +77,6 @@ plt.show()
 
     #print(ticker, np.mean(investment_strategy)/np.std(investment_strategy))
 
-
-
-
 real_list = [1]
 pred_list = [1]
 idx = 1

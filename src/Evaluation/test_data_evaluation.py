@@ -7,12 +7,12 @@ import seaborn as sns
 tickers = ['ACN', 'AMAT', 'CDNS', 'IBM', 'INTU', 'LRCX', 'NTAP', 'VRSN', 'WU', 'XLNX']
 
 LSTM_partial: bool = True
-VAR: bool = False
+VAR: bool = True
 VARMAX: bool = False
 R2N2: bool = False
 
-pred_path = '../output/LSTM_results/valid_results/partial_all_stocks_pred.csv'
-real_path = '../output/LSTM_results/valid_results/partial_all_stocks_real.csv'
+pred_path = '../output/LSTM_results/test_results/partial_all_stocks_pred.csv'
+real_path = '../output/LSTM_results/test_results/partial_all_stocks_real.csv'
 
 pred = pd.read_csv(pred_path).values
 real = pd.read_csv(real_path).values
@@ -140,17 +140,18 @@ if VARMAX is True:
     print('VARMAX SR:', np.mean(VARMAX_strategy_returns)/np.std(VARMAX_strategy_returns))
 
 if VAR is True:
-    var_test_path = '../output/VAR_results/test_predictions.csv'
-    var_data = pd.read_csv(var_test_path).values
-    var_data = var_data[24: var_data.shape[0]]
+    var_test_path = '../output/VAR_results/VAR_test_predictions.csv'
+    var_data = pd.read_csv(var_test_path)
+    var_data = var_data.drop(columns=['Unnamed: 0']).values
 
     threshold = 0
 
     strategy_returns = np.zeros(real.shape)
+    print(strategy_returns.shape)
 
-    for i in range(strategy_returns.shape[0]):
+    for i in range(strategy_returns.shape[0] - 1):
         for j in range(strategy_returns.shape[1]):
-            if var_data[i, j] > threshold:
+            if var_data[i + 1, j] > threshold:
                 strategy_returns[i, j] = real[i, j]
             else:
                 strategy_returns[i, j] = -real[i, j]
@@ -167,7 +168,7 @@ if VAR is True:
     sns.distplot(var_data.flatten(), kde=True, hist=True, bins=100,
                  label='Predicted returns', hist_kws={'edgecolor': 'black'},
                  kde_kws={"lw": 0})
-    plt.axis([-0.0125, 0.0125, 0, 5000])
+    plt.axis([-0.0125, 0.0125, 0, 2500])
     plt.title('VAR')
     plt.xlabel('Returns')
     plt.ylabel('Density')
