@@ -86,11 +86,11 @@ def customized_loss(y_pred, y_true):
 
 
 def lstm_model(stocks: list,
-               lookback: int = 24,  # HP
+               lookback: int = 24,  # HP # Not that this is set in the data file '../data/preprocessed_time_series_data.csv'
                epochs: int = 120,  # HP
                batch_size: int = 96,  # HP
                learning_rate: float = 0.0001,  # HP
-               output_dim_individual_layer: int = 1,  # HP
+               output_dim_individual_layer: int = 4,  # HP
                output_dim_combined_layer: int = 10,  # = amount of stocks
                dropout_rate: float = 0.1,  # HP
                ground_features: int = 4,  # this could be changed but let's keep it this way..
