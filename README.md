@@ -18,8 +18,9 @@ python hyp_tuning.py.
 
 Make sure that in the python file, the boolean ```rand_tuning``` is set to ```True```. Now when you run ```hyp_tuning.py```, it randomly selects the following three hyperparameters:
 
-* Number of LSTM units
-* Lookback period
+* Number of LSTM units.
+* Lookback period.
 * Learning rate.
 
+Given a choice of these three hyperparameters, the file saves the MSE value on the validation set of our data, and saves it in a csv file. This csv file is located in src/output/LSTM_tuning/random_samples. To distinguish between different files, every time we run a random selection of hyperparameters, we save that file with a random number in its name.
 
