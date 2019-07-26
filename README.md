@@ -16,11 +16,13 @@ and run
 python hyp_tuning.py. 
 ```
 
-Make sure that in the python file, the boolean ```rand_tuning``` is set to ```True```. Now when you run ```hyp_tuning.py```, it randomly selects the following three hyperparameters:
+Make sure that in the python file, the boolean ```rand_tuning``` is set to ```True```. Now when you run ```hyp_tuning.py```, it randomly selects the hyperparameters
 
-* Number of LSTM units.
-* Lookback period.
-* Learning rate.
+* Number of LSTM units
+* Lookback period
+* Learning rate
 
-Given a choice of these three hyperparameters, the file saves the MSE value on the validation set of our data, and saves it in a csv file. This csv file is located in src/output/LSTM_tuning/random_samples. To distinguish between different files, every time we run a random selection of hyperparameters, we save that file with a random number in its name.
+and saves the MSE value obtained on the validation set of our data into a csv file. In the file ```hyp_tuning.py```, on about line 140, the quantity ```num_trials``` is the number of times we want python to generate a random choice of these parameters. 
+
+The CSV file that is generated is saved in src/output/LSTM_tuning/random_samples. If you set  ```num_trials``` to be ```4```, then the CSV file will have 4 rows. 
 
