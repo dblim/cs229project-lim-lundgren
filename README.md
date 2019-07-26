@@ -28,4 +28,4 @@ and saves the MSE value obtained on the validation set of our data into a CSV fi
 
 To obtain Fig. 2 in our CS 229 project linked above, go to ```src/output/LSTM_training/``` and run the jupyter notebook ```Tuning_plot.ipynb```. Run all the code in there, and the figure generated will be a plot of hyperparameters against MSE value.
 
-Finally, note that the plot is made out of all the values from all the CSV files in the folder ```src/output/LSTM_tuning/random_samples```.
+Finally, note that the plot is made out of *all* the CSV files in the folder ```src/output/LSTM_tuning/random_samples```.
