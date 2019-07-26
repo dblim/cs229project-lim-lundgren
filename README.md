@@ -6,7 +6,7 @@ This is the repository for my final project for CS 229. It is joint with Justin 
 Our final project is available at http://cs229.stanford.edu/proj2019/report/31.pdf.
 
 # Setup
-Make sure that you have Tensorflow 1.13 installed instead of Tensorflow 2.0. We use Keras for our code with a tensorflow backend. Our version of Keras (2.2.4) is not compatible with Tensorflow 2.0.
+Make sure that you have Tensorflow 1.13 installed instead of Tensorflow 2.0. We use Keras for our code with a tensorflow backend. The current version of Keras (which I believe is 2.2.4, as of June 2019) is not compatible with Tensorflow 2.0.
 
 # Hyperparameter Tuning
 Here's something to play around with, namely hyperparameter tuning via a random grid search. First clone the repository, then go to ```src/LSTM```
