@@ -22,7 +22,5 @@ Make sure that in the python file, the boolean ```rand_tuning``` is set to ```Tr
 * Lookback period
 * Learning rate
 
-and saves the MSE value obtained on the validation set of our data into a csv file. In the file ```hyp_tuning.py```, on about line 140, the quantity ```num_trials``` is the number of times we want python to generate a random choice of these parameters. 
-
-The CSV file that is generated is saved in src/output/LSTM_tuning/random_samples. If you set  ```num_trials``` to be ```4```, then the CSV file will have 4 rows. 
+and saves the MSE value obtained on the validation set of our data into a CSV file. In the file ```hyp_tuning.py```, on about line 140, the quantity ```num_trials``` is the number of times we want python to generate a random choice of these parameters. We save the CSV file in  src/output/LSTM_tuning/random_samples. To distinguish the  different files each time we execute ```python hyp_tuning.py```, the CSV files contain a random number in their name.
 
