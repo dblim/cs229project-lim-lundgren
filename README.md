@@ -20,7 +20,7 @@ python hyp_tuning.py.
 
 Make sure that in the python file, the boolean ```rand_tuning``` is set to ```True```. Now when you run ```hyp_tuning.py```, it randomly selects the hyperparameters
 
-* Number of LSTM units
+* Number of LSTM units.  Basically 
 * Lookback period
 * Learning rate
 
