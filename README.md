@@ -5,7 +5,7 @@ This is the repository for my final project for the class. It is joint with Just
 Title: Algorithmic Trading using LSTM-Models for Intraday Stock Predictions 
 
 # Paper: 
-Our final project is available at http://cs229.stanford.edu/proj2019/report/31.pdf.
+Our final project is available at http://cs229.stanford.edu/proj2019spr/report/31.pdf.
 
 # Setup
 Make sure that you have Tensorflow 1.13 installed instead of Tensorflow 2.0. We use Keras for our code with a tensorflow backend. The current version of Keras (which I believe is 2.2.4, as of June 2019) is not compatible with Tensorflow 2.0.
