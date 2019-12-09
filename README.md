@@ -5,7 +5,12 @@ This is the repository for my final project for the class. It is joint with Just
 Title: Algorithmic Trading using LSTM-Models for Intraday Stock Predictions 
 
 # Paper: 
-Our final project is available at http://cs229.stanford.edu/proj2019spr/report/31.pdf.
+Our final project is available at http://cs229.stanford.edu/proj2019/report/31.pdf.
+If you do not have access to Stanford papers, it can be found at https://www.dropbox.com/s/77ynq4ymd93o3al/CS229_final_version.pdf?dl=0
+
+# Code:
+The src directory contains the pipelines for a VAR-model, a VARMAX-model, an LSTM-model and an R2N2-model which is the combination of the LSTM model and the residuals of the VARMAX-model.
+The src directory also contins a directory with the raw data, the output, and the evaluation methods, which are based on correlations with actual returns, a simple long/short investment strategy and mean squared error. 
 
 # Setup
 Make sure that you have Tensorflow 1.13 installed instead of Tensorflow 2.0. We use Keras for our code with a tensorflow backend. The current version of Keras (which I believe is 2.2.4, as of June 2019) is not compatible with Tensorflow 2.0.
